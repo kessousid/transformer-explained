@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 3: Word Embeddings — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="03">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:48%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m1">Module 1</span>
+          <span class="topbar-title">Word Embeddings</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#a78bfa">Module 1 · Foundations</span>
+          <h1>Word Embeddings: <span class="gradient-text">GPS for Words</span></h1>
+          <p class="desc">Learn how token IDs are transformed into rich meaning-filled vectors that capture semantic relationships.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 10 min</span>
+            <span class="meta-item">🎯 Lesson 3 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>Token IDs Have <span class="gradient-text">No Meaning</span></h2>
+              <p>After tokenization, we have numbers like <code>1024</code>, <code>9604</code>, <code>318</code>. But these are just arbitrary IDs — like house numbers on a street.</p>
+              <div class="highlight-box" style="border-left-color:#ef4444;background:rgba(239,68,68,0.08)">
+                ❌ <strong>Problem:</strong> Token ID <code>1024</code> ("king") and <code>1025</code> ("queen") are just 1 apart numerically, but they have very different meanings. And "king" and "emperor" have similar meanings but very different IDs.
+              </div>
+              <div class="highlight-box green" style="margin-top:0.75rem">
+                ✅ <strong>Solution:</strong> Transform each token ID into a <em>dense vector of floating-point numbers</em> that captures meaning. This is an <strong>embedding</strong>.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>What is an <span class="gradient-text">Embedding</span>?</h2>
+              <p>An embedding is a <strong>list of numbers</strong> (a vector) that represents a token in a high-dimensional space. Words with similar meanings end up close together.</p>
+              <div class="slide-two-col">
+                <div>
+                  <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:0.5rem">Each word → a vector (simplified to 4D here):</p>
+                  <div style="font-family:var(--font-mono);font-size:0.8rem;display:flex;flex-direction:column;gap:0.4rem">
+                    <div><span style="color:#a78bfa">king</span>    = [0.95, 0.22, 0.87, 0.11]</div>
+                    <div><span style="color:#f472b6">queen</span>   = [0.91, 0.78, 0.85, 0.13]</div>
+                    <div><span style="color:#38bdf8">man</span>     = [0.93, 0.21, 0.10, 0.08]</div>
+                    <div><span style="color:#34d399">woman</span>   = [0.89, 0.77, 0.08, 0.10]</div>
+                    <div><span style="color:#fbbf24">pizza</span>   = [0.10, 0.05, 0.02, 0.91]</div>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Observation</span>
+                  <p style="font-size:0.82rem;text-align:left">king & queen: similar 1st and 3rd dims 👑<br><br>man & woman: similar 1st dim, different 2nd ♀️<br><br>pizza: completely different pattern 🍕</p>
+                </div>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-3);margin-top:0.75rem">Real embeddings have <strong>512, 768, or even 12,288 dimensions</strong> — not just 4!</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2>The <span class="gradient-text">GPS Analogy</span></h2>
+              <div class="analogy-box" style="margin:0 0 1rem 0">
+                <div class="analogy-icon">🗺️</div>
+                <div>
+                  <h4>Words as locations on a map</h4>
+                  <p>Just like GPS coordinates tell you exactly where something is on Earth, an embedding tells you where a word "is" in <em>meaning-space</em>. Cities near each other on a map tend to be similar — words near each other in embedding space tend to have similar meanings.</p>
+                </div>
+              </div>
+              <p>In 2D, it might look like:</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.5rem">
+                <div style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:0.75rem;font-size:0.82rem">
+                  👑 <strong>Royalty cluster:</strong> king, queen, prince, princess — all close together
+                </div>
+                <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:0.75rem;font-size:0.82rem">
+                  🐾 <strong>Animals cluster:</strong> dog, cat, wolf, lion — grouped nearby
+                </div>
+                <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:0.75rem;font-size:0.82rem">
+                  💻 <strong>Tech cluster:</strong> computer, laptop, phone — positioned together
+                </div>
+                <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:0.75rem;font-size:0.82rem">
+                  🍕 <strong>Food cluster:</strong> pizza, burger, sushi — in their own region
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>The Famous <span class="gradient-text">King − Man + Woman = Queen</span></h2>
+              <p>One of the most mind-blowing properties of embeddings is that <strong>mathematical operations work semantically</strong>:</p>
+              <div class="math-formula">king − man + woman ≈ queen</div>
+              <p>This means the embedding space has captured the concept of "gender" as a direction in the space! Subtracting "man-ness" and adding "woman-ness" moves you from king to queen.</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div>Start at: <strong style="color:#a78bfa">king</strong> = [0.95, 0.22, 0.87]</div></div>
+                <div class="step-item"><div class="step-num">2</div><div>Subtract: <strong style="color:#38bdf8">man</strong> = [0.93, 0.21, 0.10] (removing male concept)</div></div>
+                <div class="step-item"><div class="step-num">3</div><div>Add: <strong style="color:#34d399">woman</strong> = [0.89, 0.77, 0.08] (adding female concept)</div></div>
+                <div class="step-item"><div class="step-num">4</div><div>Result ≈ <strong style="color:#f472b6">queen</strong> = [0.91, 0.78, 0.85]</div></div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2>How Embeddings are <span class="gradient-text">Learned</span></h2>
+              <p>Embeddings aren't programmed — they're <strong>learned</strong> during training by the neural network itself.</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div>Start: Every token gets a random vector of numbers</div></div>
+                <div class="step-item"><div class="step-num">2</div><div>Training: The model tries to predict the next word millions of times</div></div>
+                <div class="step-item"><div class="step-num">3</div><div>Learning: Vectors that appear in similar contexts get nudged closer together</div></div>
+                <div class="step-item"><div class="step-num">4</div><div>Result: Similar words end up with similar vectors automatically!</div></div>
+              </div>
+              <div class="highlight-box cyan">
+                💡 "You shall know a word by the company it keeps" — J.R. Firth, 1957. Words that appear in similar contexts have similar meanings. Embeddings capture exactly this!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>Interactive: <span class="gradient-text">Embedding Space</span></h2>
+              <p>Hover over the words to explore their positions. Notice how similar words cluster together:</p>
+              <div class="viz-canvas-wrap" style="height:320px">
+                <canvas id="embedding-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3);margin-top:0.5rem">This is a 2D projection of high-dimensional embeddings. Hover a dot to highlight it.</p>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🗺️</div>
+          <div>
+            <h4>The Embedding Table</h4>
+            <p>Inside every LLM there's a giant table — one row per token in the vocabulary, one column per embedding dimension. This table (called the embedding matrix) is learned during training. When you input a token, the model just looks up its row.</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">📍</div><div class="kc-title">Embedding</div><div class="kc-desc">A dense vector of numbers representing a token's meaning in high-dimensional space.</div></div>
+            <div class="key-concept"><div class="kc-icon">📐</div><div class="kc-title">Embedding Dimension</div><div class="kc-desc">The length of the vector. GPT-3 uses 12,288 dimensions.</div></div>
+            <div class="key-concept"><div class="kc-icon">🧮</div><div class="kc-title">Semantic Similarity</div><div class="kc-desc">Similar meaning → similar vectors. Measured by cosine similarity.</div></div>
+            <div class="key-concept"><div class="kc-icon">📊</div><div class="kc-title">Embedding Matrix</div><div class="kc-desc">A table of size [vocab_size × embedding_dim] learned during training.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="b"
+               data-success-msg="Exactly right! Embeddings place words in a space where similar words are close together."
+               data-fail-msg="Embeddings are learned vectors — they place words in a mathematical space where similar meanings are close together.">
+            <p class="quiz-question">What is the purpose of word embeddings?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>To compress text to save memory</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>To represent tokens as vectors where similar meanings are geometrically close</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>To translate text between languages</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>To remove punctuation from text</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="02-tokenization.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Tokenization</span></a>
+          <a href="04-the-problem.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">The Sequence Problem →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 8: Positional Encoding — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="08">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:72%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m3">Module 3</span>
+          <span class="topbar-title">Positional Encoding</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#f472b6">Module 3 · Architecture</span>
+          <h1><span class="gradient-text">Positional Encoding</span></h1>
+          <p class="desc">Attention doesn't know word order. Learn how sine and cosine waves inject position information into the model.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 8 min</span>
+            <span class="meta-item">🎯 Lesson 8 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 5</div>
+              <h2>The <span class="gradient-text">Order Problem</span></h2>
+              <p>Attention is <strong>permutation invariant</strong> — it treats all tokens equally regardless of position. This means:</p>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:0.9rem;margin-bottom:0.75rem">Without position info, these look <em>identical</em> to the model:</p>
+                <div class="token-row">
+                  <span class="token t1">Dog</span><span class="token t2">bites</span><span class="token t3">man</span>
+                </div>
+                <div style="color:var(--text-3);text-align:center;padding:0.3rem">vs</div>
+                <div class="token-row">
+                  <span class="token t3">Man</span><span class="token t2">bites</span><span class="token t1">dog</span>
+                </div>
+                <p style="font-size:0.82rem;color:#f87171;margin-top:0.5rem">❌ Very different meanings, but same set of tokens!</p>
+              </div>
+              <div class="highlight-box">
+                💡 We need to inject information about <strong>where</strong> each token appears in the sequence.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 5</div>
+              <h2>The Solution: <span class="gradient-text">Sinusoidal Encoding</span></h2>
+              <p>The original Transformer uses <strong>sine and cosine functions</strong> at different frequencies to encode position:</p>
+              <div class="math-formula" style="font-size:0.9rem">PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))<br><br>PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))</div>
+              <p style="font-size:0.85rem;margin:0.75rem 0">Where:</p>
+              <div style="font-size:0.85rem;display:flex;flex-direction:column;gap:0.3rem;color:var(--text-2)">
+                <div>• <code>pos</code> = position in the sequence (0, 1, 2, ...)</div>
+                <div>• <code>i</code> = dimension index</div>
+                <div>• <code>d_model</code> = embedding dimension (e.g., 512)</div>
+              </div>
+              <div class="highlight-box cyan" style="margin-top:0.75rem">
+                💡 Even dimensions get <strong>sin</strong>, odd dimensions get <strong>cos</strong>. Different frequencies create unique patterns for each position.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 5</div>
+              <h2>Why <span class="gradient-text">Sine Waves</span>?</h2>
+              <p>Sine waves have beautiful properties for encoding position:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div><strong>Unique per position:</strong> Each position gets a unique pattern of sine/cosine values</div></div>
+                <div class="step-item"><div class="step-num">2</div><div><strong>Bounded:</strong> Values always between -1 and +1, same scale as embeddings</div></div>
+                <div class="step-item"><div class="step-num">3</div><div><strong>Relative positions:</strong> PE(pos+k) can be expressed as a linear function of PE(pos) — model can learn relative distances</div></div>
+                <div class="step-item"><div class="step-num">4</div><div><strong>Extrapolation:</strong> Works for any sequence length, even longer than seen during training</div></div>
+              </div>
+              <div class="highlight-box amber">
+                💡 Think of it like a multi-frequency radio signal. Low frequencies encode rough position (which sentence half), high frequencies encode fine position (which specific word).
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 5</div>
+              <h2>Adding to <span class="gradient-text">Embeddings</span></h2>
+              <p>The positional encoding is simply <strong>added</strong> to the token embedding:</p>
+              <div class="math-formula">input = token_embedding + positional_encoding</div>
+              <div class="step-list" style="margin:1rem 0">
+                <div class="step-item"><div class="step-num">1</div><div>Token "cat" → embedding vector [0.2, -0.5, 0.8, ...]</div></div>
+                <div class="step-item"><div class="step-num">2</div><div>Position 3 → PE vector [sin(3/1), cos(3/1), sin(3/100), ...]</div></div>
+                <div class="step-item"><div class="step-num">3</div><div>Input = embedding + PE = [0.2+sin(3/1), -0.5+cos(3/1), ...]</div></div>
+              </div>
+              <p>The word "cat" at position 3 now has a <em>different</em> input than "cat" at position 7. The attention mechanism can use this difference to understand order!</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 5</div>
+              <h2>Interactive: <span class="gradient-text">Positional Encoding Visualization</span></h2>
+              <p>Each colored line shows a different dimension of the encoding across 50 positions. Notice how different frequencies create distinct patterns:</p>
+              <div class="viz-canvas-wrap" style="height:300px;margin:1rem 0">
+                <canvas id="pe-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3)">Low-frequency dimensions (dim 0, 1) change slowly — encoding coarse position. High-frequency dimensions change rapidly — encoding fine position.</p>
+              <div class="highlight-box green" style="margin-top:0.75rem">
+                ✅ Modern LLMs (GPT-4, Llama) use <strong>Rotary Position Encoding (RoPE)</strong> — an improved version that handles much longer sequences. But the principle is the same!
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 5</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🎵</div>
+          <div>
+            <h4>The Musical Chord Analogy</h4>
+            <p>Each position in the sequence is like a unique musical chord — a combination of different frequencies played together. Just as you can identify a chord by its sound, the model can identify a position by its pattern of sine/cosine values. No two positions have exactly the same "chord".</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">📍</div><div class="kc-title">Positional Encoding</div><div class="kc-desc">A vector added to each token embedding to encode its position in the sequence.</div></div>
+            <div class="key-concept"><div class="kc-icon">📈</div><div class="kc-title">Sinusoidal</div><div class="kc-desc">Uses sin/cos at multiple frequencies — each position gets a unique fingerprint.</div></div>
+            <div class="key-concept"><div class="kc-icon">➕</div><div class="kc-title">Addition</div><div class="kc-desc">PE is added (not concatenated) to the token embedding, keeping the same dimension.</div></div>
+            <div class="key-concept"><div class="kc-icon">🔄</div><div class="kc-title">RoPE</div><div class="kc-desc">Modern Rotary Position Encoding — used by LLaMA, GPT-NeoX, and other recent models.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="a"
+               data-success-msg="Correct! Attention is order-agnostic so we must explicitly inject position via positional encoding."
+               data-fail-msg="Attention treats all positions equally — positional encoding is needed to inform the model about token order.">
+            <p class="quiz-question">Why does a Transformer need Positional Encoding?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>Attention has no notion of order, so position must be explicitly added to embeddings</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>To increase the embedding dimension</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>To make training faster</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>To encode word frequency in the training data</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="07-multihead-attention.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Multi-Head Attention</span></a>
+          <a href="09-encoder.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">The Encoder →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

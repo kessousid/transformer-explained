@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 2: Tokenization — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="02">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:32%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m1">Module 1</span>
+          <span class="topbar-title">Tokenization</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#a78bfa">Module 1 · Foundations</span>
+          <h1>Tokenization: <span class="gradient-text">Text → Numbers</span></h1>
+          <p class="desc">Learn how AI models break text into tokens — the first step in processing language.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 8 min</span>
+            <span class="meta-item">🎯 Lesson 2 of 11</span>
+          </div>
+        </div>
+
+        <!-- SLIDESHOW -->
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>Computers Speak <span class="gradient-text">Numbers</span></h2>
+              <p>Computers are fundamentally number-crunching machines. They can't directly process text like "Hello world" — they need numbers.</p>
+              <div class="slide-two-col" style="margin-top:1.25rem">
+                <div>
+                  <div class="highlight-box" style="border-left-color:#ef4444;background:rgba(239,68,68,0.08)">
+                    ❌ Computer cannot process: <br><code style="color:#f87171">"Hello, how are you?"</code>
+                  </div>
+                  <div class="highlight-box green" style="margin-top:0.75rem">
+                    ✅ Computer CAN process: <br><code>[15496, 11, 703, 389, 345, 30]</code>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">The first step</span>
+                  <div class="anim-box gray" style="width:100%;text-align:center">Text String</div>
+                  <div style="color:var(--text-3);font-size:1.2rem">↓</div>
+                  <div class="anim-box purple" style="width:100%;text-align:center">Token IDs</div>
+                </div>
+              </div>
+              <p style="margin-top:0.75rem"><strong>Tokenization</strong> is the process of converting text into a sequence of numbers that a model can process.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>What is a <span class="gradient-text">Token</span>?</h2>
+              <p>A token is a <strong>chunk of text</strong> — usually a word, part of a word, or punctuation mark. Each token maps to a unique integer ID.</p>
+              <div style="margin:1.25rem 0">
+                <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:0.5rem">Example sentence:</p>
+                <p style="font-size:1.1rem;font-weight:600;color:var(--text-1);margin-bottom:1rem">"Transformers are amazing!"</p>
+                <div class="token-row">
+                  <span class="token t1">Transform</span>
+                  <span class="token t2">ers</span>
+                  <span class="token t3"> are</span>
+                  <span class="token t4"> amaz</span>
+                  <span class="token t5">ing</span>
+                  <span class="token t6">!</span>
+                </div>
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem">
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">9602</span>
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">364</span>
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">389</span>
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">6581</span>
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">278</span>
+                  <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-3)">0</span>
+                </div>
+              </div>
+              <p>Notice that "Transformers" is split into <em>two</em> tokens: "Transform" + "ers". This is called <strong>subword tokenization</strong>.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2>Why <span class="gradient-text">Subword</span> Tokenization?</h2>
+              <p>Why not just use whole words? Three big problems:</p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div><strong>New words</strong> — "COVID-19", "blockchain", slang. A whole-word vocab can't handle them.</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div><strong>Huge vocabulary</strong> — English has 170,000+ words. That's an enormous lookup table.</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div><strong>Morphology</strong> — "run", "running", "runner" share a root. Subword captures this structure.</div>
+                </div>
+              </div>
+              <div class="highlight-box cyan">
+                💡 <strong>BPE (Byte-Pair Encoding)</strong> is the most popular algorithm. It starts with characters and merges the most frequent pairs together until it has a good vocabulary (~50,000 tokens).
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>Real Examples from <span class="gradient-text">GPT-4</span></h2>
+              <p>Here's how different texts tokenize in real models:</p>
+              <div style="display:flex;flex-direction:column;gap:1rem;margin:1rem 0">
+                <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:0.85rem 1rem">
+                  <p style="font-size:0.78rem;color:var(--text-3);margin-bottom:0.4rem">"Hello world" → 2 tokens</p>
+                  <div class="token-row"><span class="token t1">Hello</span><span class="token t2"> world</span></div>
+                </div>
+                <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:0.85rem 1rem">
+                  <p style="font-size:0.78rem;color:var(--text-3);margin-bottom:0.4rem">"unbelievable" → 3 tokens</p>
+                  <div class="token-row"><span class="token t3">un</span><span class="token t4">believ</span><span class="token t5">able</span></div>
+                </div>
+                <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:0.85rem 1rem">
+                  <p style="font-size:0.78rem;color:var(--text-3);margin-bottom:0.4rem">"ChatGPT" → 3 tokens</p>
+                  <div class="token-row"><span class="token t1">Chat</span><span class="token t2">G</span><span class="token t3">PT</span></div>
+                </div>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-3)">💡 1 token ≈ 4 characters in English. GPT-4 can process up to 128,000 tokens at once.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2>The <span class="gradient-text">Vocabulary</span></h2>
+              <p>Every tokenizer has a <strong>vocabulary</strong> — a fixed list of all possible tokens, each with a unique ID.</p>
+              <div class="slide-two-col">
+                <div>
+                  <table class="compare-table">
+                    <thead><tr><th>Model</th><th>Vocab Size</th></tr></thead>
+                    <tbody>
+                      <tr><td>GPT-2</td><td>50,257</td></tr>
+                      <tr><td>GPT-4</td><td>100,277</td></tr>
+                      <tr><td>BERT</td><td>30,522</td></tr>
+                      <tr><td>Llama 3</td><td>128,000</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Token lookup</span>
+                  <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-2);text-align:left;width:100%">
+                    <div style="display:flex;justify-content:space-between"><span style="color:#a78bfa">"hello"</span><span>→ 31373</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="color:#38bdf8">"world"</span><span>→ 995</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="color:#34d399">"!"</span><span>→ 0</span></div>
+                    <div style="display:flex;justify-content:space-between"><span style="color:#fbbf24">"AI"</span><span>→ 20185</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>Try It: <span class="gradient-text">Interactive Demo</span></h2>
+              <p>See tokenization in action! Type any text below and watch it split into tokens:</p>
+              <textarea class="demo-input" id="token-input" rows="2" placeholder="Type your text here...">The quick brown fox jumps over the lazy dog.</textarea>
+              <button class="demo-btn" id="token-btn">🔤 Tokenize</button>
+              <div class="demo-output" id="token-output">
+                <span style="color:var(--text-3);font-size:0.85rem">Tokens will appear here...</span>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3);margin-top:0.5rem">Token count: <strong id="token-count" style="color:#a78bfa">—</strong></p>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <!-- ANALOGY -->
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">📖</div>
+          <div>
+            <h4>The Dictionary Analogy</h4>
+            <p>Think of the tokenizer as a special dictionary. Every possible word-piece has a page number. The model gets the page numbers, not the words — and it's surprisingly good at understanding meaning from page numbers alone.</p>
+          </div>
+        </div>
+
+        <!-- KEY CONCEPTS -->
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept">
+              <div class="kc-icon">🔤</div>
+              <div class="kc-title">Token</div>
+              <div class="kc-desc">A chunk of text (word, subword, or character) mapped to a unique integer ID.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">📚</div>
+              <div class="kc-title">Vocabulary</div>
+              <div class="kc-desc">The complete list of all tokens the model knows (~50K–128K tokens).</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">🧩</div>
+              <div class="kc-title">BPE</div>
+              <div class="kc-desc">Byte-Pair Encoding — merges frequent character pairs to build an efficient vocabulary.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">📏</div>
+              <div class="kc-title">Context Window</div>
+              <div class="kc-desc">The maximum number of tokens a model can process at once (e.g., 128K for GPT-4).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUIZ -->
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="c"
+               data-success-msg="Correct! BPE handles unknown words by breaking them into known subword pieces."
+               data-fail-msg="Subword tokenization (BPE) solves the unknown word problem — it breaks any word into known pieces.">
+            <p class="quiz-question">Why do modern tokenizers split "unbelievable" into sub-parts like "un" + "believ" + "able"?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>To confuse the model</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>Because computers can't store long words</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>To handle rare/unknown words and share vocabulary across similar words</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>Because "unbelievable" has no meaning as a whole</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <!-- NAV -->
+        <div class="lesson-nav-footer">
+          <a href="01-introduction.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Introduction</span></a>
+          <a href="03-embeddings.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">Word Embeddings →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

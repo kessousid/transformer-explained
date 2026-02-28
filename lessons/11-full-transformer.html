@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 11: The Full Transformer — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="11">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:100%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m4">Module 4</span>
+          <span class="topbar-title">The Full Transformer & Modern LLMs</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next" disabled>Done ✓</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#34d399">Module 4 · Modern LLMs</span>
+          <h1>The <span class="gradient-text">Full Picture</span></h1>
+          <p class="desc">Bring everything together! See the complete Transformer architecture, explore modern LLM variants, and understand how GPT, BERT, and Claude are built.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 12 min</span>
+            <span class="meta-item">🎯 Lesson 11 of 11</span>
+            <span class="meta-item">🏆 Final Lesson</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 7</div>
+              <h2>The Complete <span class="gradient-text">Transformer</span></h2>
+              <p>Let's see the full architecture we've been building piece by piece:</p>
+              <div class="anim-flow" style="flex-wrap:wrap;gap:0.5rem;margin:1.25rem 0">
+                <div class="anim-box purple" style="text-align:center">Input<br>Tokens</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box cyan" style="text-align:center">Embedding<br>+ PE</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box pink" style="text-align:center">Encoder<br>×N layers</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green" style="text-align:center">Context<br>Vectors</div>
+              </div>
+              <div class="anim-flow" style="flex-wrap:wrap;gap:0.5rem;margin-top:0">
+                <div class="anim-box amber" style="text-align:center">Output<br>Tokens</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box purple" style="text-align:center">Embedding<br>+ PE</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box cyan" style="text-align:center">Decoder<br>×N layers</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green" style="text-align:center">Softmax<br>→ Next Token</div>
+              </div>
+              <div class="highlight-box" style="margin-top:1rem">
+                ⚡ The encoder and decoder are connected through <strong>cross-attention</strong> — the decoder's middle layer attends to the encoder's output.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 7</div>
+              <h2>Full Architecture <span class="gradient-text">Diagram</span></h2>
+              <div class="viz-canvas-wrap" style="height:500px;margin:1rem 0">
+                <canvas id="full-tf-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3)">The golden arrow shows the cross-attention connection between encoder and decoder.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 7</div>
+              <h2>Modern Variants: <span class="gradient-text">Encoder-Only</span></h2>
+              <p><strong>BERT</strong> (and its family: RoBERTa, ALBERT) uses only the encoder. It's great for <em>understanding</em> text, not generating it.</p>
+              <div class="slide-two-col">
+                <div>
+                  <div class="step-list">
+                    <div class="step-item"><div class="step-num">📥</div><div><strong>Input:</strong> Text (both sides of a [MASK])</div></div>
+                    <div class="step-item"><div class="step-num">⚡</div><div><strong>Process:</strong> Bidirectional encoder — looks at all context</div></div>
+                    <div class="step-item"><div class="step-num">📤</div><div><strong>Output:</strong> Contextual embeddings / fill-in-the-blank</div></div>
+                  </div>
+                  <div class="tag-cloud" style="margin-top:1rem">
+                    <span class="tag" style="color:#38bdf8">BERT</span>
+                    <span class="tag" style="color:#38bdf8">RoBERTa</span>
+                    <span class="tag" style="color:#38bdf8">DeBERTa</span>
+                    <span class="tag" style="color:#38bdf8">ELECTRA</span>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Best for</span>
+                  <div style="font-size:0.82rem;text-align:left;width:100%;margin-top:0.5rem;display:flex;flex-direction:column;gap:0.3rem">
+                    <div>✅ Text classification</div>
+                    <div>✅ Named entity recognition</div>
+                    <div>✅ Question answering</div>
+                    <div>✅ Semantic search</div>
+                    <div>❌ Not for generation</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 7</div>
+              <h2>Modern Variants: <span class="gradient-text">Decoder-Only</span></h2>
+              <p><strong>GPT</strong> (and Claude, Llama, Gemini) uses only the decoder with causal masking. This is the dominant architecture for modern LLMs.</p>
+              <div class="slide-two-col">
+                <div>
+                  <div class="step-list">
+                    <div class="step-item"><div class="step-num">📥</div><div><strong>Input:</strong> Prompt / context</div></div>
+                    <div class="step-item"><div class="step-num">⚡</div><div><strong>Process:</strong> Causal decoder — can only look left</div></div>
+                    <div class="step-item"><div class="step-num">📤</div><div><strong>Output:</strong> Next token probabilities → generates text</div></div>
+                  </div>
+                  <div class="tag-cloud" style="margin-top:1rem">
+                    <span class="tag" style="color:#a78bfa">GPT-4</span>
+                    <span class="tag" style="color:#a78bfa">Claude</span>
+                    <span class="tag" style="color:#a78bfa">Llama</span>
+                    <span class="tag" style="color:#a78bfa">Gemini</span>
+                    <span class="tag" style="color:#a78bfa">Mistral</span>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Best for</span>
+                  <div style="font-size:0.82rem;text-align:left;width:100%;margin-top:0.5rem;display:flex;flex-direction:column;gap:0.3rem">
+                    <div>✅ Text generation</div>
+                    <div>✅ Chatbots &amp; assistants</div>
+                    <div>✅ Code generation</div>
+                    <div>✅ Creative writing</div>
+                    <div>✅ Reasoning tasks</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 7</div>
+              <h2>How LLMs are <span class="gradient-text">Trained</span></h2>
+              <p>Training a large language model happens in stages:</p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div>
+                    <strong>Pre-training (Next Token Prediction)</strong><br>
+                    <span style="font-size:0.82rem;color:var(--text-2)">Feed the model trillions of tokens from the internet. Train it to predict the next token. This is self-supervised — no human labels needed!</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div>
+                    <strong>Supervised Fine-Tuning (SFT)</strong><br>
+                    <span style="font-size:0.82rem;color:var(--text-2)">Fine-tune on high-quality examples of instructions + good responses. The model learns to follow instructions.</span>
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div>
+                    <strong>RLHF (Reinforcement Learning from Human Feedback)</strong><br>
+                    <span style="font-size:0.82rem;color:var(--text-2)">Human raters rank responses. A reward model is trained. The LLM is trained to maximize the reward. Makes models helpful, harmless, and honest.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 7</div>
+              <h2>The <span class="gradient-text">Scale</span> of Modern LLMs</h2>
+              <p>Modern LLMs are mind-bogglingly large:</p>
+              <table class="compare-table">
+                <thead><tr><th>Model</th><th>Parameters</th><th>Context</th><th>Layers</th></tr></thead>
+                <tbody>
+                  <tr><td>GPT-2</td><td>1.5B</td><td>1,024</td><td>48</td></tr>
+                  <tr><td>GPT-3</td><td>175B</td><td>4,096</td><td>96</td></tr>
+                  <tr><td>Llama 3 70B</td><td>70B</td><td>128K</td><td>80</td></tr>
+                  <tr><td>Claude 3</td><td>~100B+</td><td>200K</td><td>~90</td></tr>
+                  <tr><td>GPT-4</td><td>~1.7T (est.)</td><td>128K</td><td>~120</td></tr>
+                </tbody>
+              </table>
+              <div class="highlight-box amber" style="margin-top:1rem">
+                💡 GPT-3's 175B parameters weigh about 350 GB of disk space. Training it cost ~$4.6 million in compute!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 7 of 7</div>
+              <h2>🎉 Congratulations! You <span class="gradient-text">Made It</span>!</h2>
+              <p>You now understand the complete Transformer architecture! Let's recap everything you've learned:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Tokenization</strong> — Text → Token IDs</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Embeddings</strong> — Token IDs → Meaning vectors</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Positional Encoding</strong> — Adding order awareness</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Self-Attention</strong> — Every token attends to every other</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Multi-Head Attention</strong> — Parallel attention heads</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Encoder</strong> — Understanding input deeply</div></div>
+                <div class="step-item"><div class="step-num">✓</div><div><strong>Decoder</strong> — Auto-regressive generation</div></div>
+              </div>
+              <div class="highlight-box green" style="margin-top:1rem">
+                🚀 You now understand the technology powering ChatGPT, Claude, Gemini, and every other modern AI language model. Incredible!
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 7</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🏛️</div>
+          <div>
+            <h4>The Complete Picture</h4>
+            <p>A Transformer is like a sophisticated translation chamber: input enters the encoder, which builds a deep understanding. The decoder then uses that understanding alongside what it's already written to produce the next word, one at a time — guided by 6 (or 96) layers of multi-head attention, residual connections, and feed-forward networks.</p>
+          </div>
+        </div>
+
+        <!-- COMPLETE REVIEW SECTION -->
+        <div class="viz-section reveal">
+          <div class="viz-title">🏗️ Full Architecture Overview</div>
+          <div class="viz-desc">The complete Encoder-Decoder Transformer. Encoder on the left, Decoder on the right, connected by cross-attention.</div>
+          <div class="viz-canvas-wrap" style="height:520px">
+            <canvas id="full-tf-canvas-2" style="width:100%;height:100%"></canvas>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>The Family of Transformers</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept">
+              <div class="kc-icon">🔍</div>
+              <div class="kc-title">Encoder-Only (BERT)</div>
+              <div class="kc-desc">Bidirectional understanding. Best for classification, NER, search. Not for generation.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">✍️</div>
+              <div class="kc-title">Decoder-Only (GPT)</div>
+              <div class="kc-desc">Auto-regressive generation. Powers ChatGPT, Claude, Llama. The dominant architecture today.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">🔄</div>
+              <div class="kc-title">Encoder-Decoder (T5)</div>
+              <div class="kc-desc">Original architecture. Best for seq2seq tasks: translation, summarization. Used by T5, BART.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">🚀</div>
+              <div class="kc-title">Scaling Laws</div>
+              <div class="kc-desc">More parameters + more data = better performance. This discovery drove the LLM revolution.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Final Challenge</h2>
+          <div class="quiz-card" id="quiz" data-correct="c"
+               data-success-msg="🏆 Perfect! GPT and similar models (Claude, Llama) are decoder-only Transformers using causal (masked) self-attention."
+               data-fail-msg="Modern LLMs like GPT and Claude use decoder-only architecture with causal masking for auto-regressive text generation.">
+            <p class="quiz-question">GPT-4, Claude, and Llama are all examples of which Transformer variant?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>Encoder-only (like BERT)</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>Full Encoder-Decoder (like the original Transformer)</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>Decoder-only with causal (masked) self-attention</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>RNN with attention</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Final Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <!-- COURSE COMPLETE CELEBRATION -->
+        <div style="background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(6,182,212,0.1));border:1px solid rgba(124,58,237,0.3);border-radius:var(--radius);padding:2rem;text-align:center;margin-bottom:2rem" class="reveal">
+          <div style="font-size:2.5rem;margin-bottom:0.75rem">🎓</div>
+          <h2 style="margin-bottom:0.75rem">Course Complete!</h2>
+          <p style="max-width:500px;margin:0 auto 1.5rem">You've completed all 11 lessons and now have a solid understanding of how Transformers work. The technology behind every major LLM.</p>
+          <a href="../index.html" class="btn-primary">← Back to Course Home</a>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="10-decoder.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">The Decoder</span></a>
+          <a href="../index.html" class="nav-next"><div><span class="nav-label">Course Complete</span><span class="nav-title">Back to Home →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+  <script>
+    // Also render the second full-tf canvas on this page
+    document.addEventListener('DOMContentLoaded', () => {
+      const c = document.getElementById('full-tf-canvas-2');
+      if (c) {
+        c.id = 'full-tf-canvas'; // reuse the existing init function
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 9: The Encoder — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="09">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:81%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m3">Module 3</span>
+          <span class="topbar-title">The Encoder</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#f472b6">Module 3 · Architecture</span>
+          <h1>The <span class="gradient-text">Encoder</span></h1>
+          <p class="desc">The encoder reads and deeply understands the input. Learn how all the pieces combine into a single powerful layer, stacked 6 times.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 10 min</span>
+            <span class="meta-item">🎯 Lesson 9 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>The Encoder's <span class="gradient-text">Job</span></h2>
+              <p>The encoder <strong>reads the input</strong> and produces a rich contextual representation for each token. This output is then used by the decoder to generate a response.</p>
+              <div class="anim-flow" style="margin:1.5rem 0">
+                <div class="anim-box gray">Raw text<br><span style="font-size:0.72rem">"Hello world"</span></div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box purple">Tokens<br><span style="font-size:0.72rem">[1234, 5678]</span></div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box cyan">Embeddings<br><span style="font-size:0.72rem">[vectors]</span></div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box pink">ENCODER<br><span style="font-size:0.72rem">×6 layers</span></div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green">Context<br><span style="font-size:0.72rem">[enriched vectors]</span></div>
+              </div>
+              <p>Think of the encoder as reading a book very carefully, building a deep understanding before answering any questions about it.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>Encoder Layer <span class="gradient-text">Components</span></h2>
+              <p>Each encoder layer has just <strong>two sub-layers</strong>:</p>
+              <div class="slide-two-col">
+                <div class="step-list">
+                  <div class="step-item">
+                    <div class="step-num" style="background:linear-gradient(135deg,#7c3aed,#06b6d4)">1</div>
+                    <div><strong style="color:#a78bfa">Multi-Head Self-Attention</strong><br><span style="font-size:0.82rem;color:var(--text-2)">Lets each token attend to all other tokens in the input</span></div>
+                  </div>
+                  <div class="step-item">
+                    <div class="step-num" style="background:linear-gradient(135deg,#059669,#34d399)">2</div>
+                    <div><strong style="color:#34d399">Feed-Forward Network (FFN)</strong><br><span style="font-size:0.82rem;color:var(--text-2)">Two linear layers with ReLU activation — processes each position independently</span></div>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Both have</span>
+                  <div style="font-size:0.82rem;text-align:left;width:100%;margin-top:0.5rem">
+                    <div class="anim-box amber" style="width:100%;text-align:center;margin-bottom:0.4rem">Add & Layer Norm</div>
+                    <p style="font-size:0.78rem;color:var(--text-3);text-align:center">Applied after each sub-layer</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2><span class="gradient-text">Residual Connections</span> & Layer Norm</h2>
+              <p>After each sub-layer, two important things happen:</p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">+</div>
+                  <div>
+                    <strong>Residual Connection (Add):</strong> The sub-layer's output is <em>added to its input</em>
+                    <div class="math-formula" style="font-size:0.85rem;margin:0.5rem 0">output = LayerNorm(x + Sublayer(x))</div>
+                    This allows gradients to flow easily during training (prevents vanishing gradients)
+                  </div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">N</div>
+                  <div>
+                    <strong>Layer Normalization:</strong> Normalizes the values to have mean 0 and variance 1. This stabilizes training and speeds convergence.
+                  </div>
+                </div>
+              </div>
+              <div class="highlight-box cyan">
+                💡 Residual connections are like "shortcuts" — the input bypasses the sub-layer and gets added back in. This makes very deep networks trainable!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>The <span class="gradient-text">Feed-Forward Network</span></h2>
+              <p>The FFN is applied <em>independently to each position</em> — it's the same network for every token, but it processes them in parallel.</p>
+              <div class="math-formula">FFN(x) = ReLU(x·W₁ + b₁)·W₂ + b₂</div>
+              <div class="slide-two-col" style="margin-top:0.75rem">
+                <div>
+                  <div class="step-list">
+                    <div class="step-item"><div class="step-num">1</div><div>Linear layer: d_model → d_ff (expand)<br><span style="font-size:0.78rem;color:var(--text-3)">e.g., 512 → 2048</span></div></div>
+                    <div class="step-item"><div class="step-num">2</div><div>ReLU activation (non-linearity)</div></div>
+                    <div class="step-item"><div class="step-num">3</div><div>Linear layer: d_ff → d_model (compress)<br><span style="font-size:0.78rem;color:var(--text-3)">e.g., 2048 → 512</span></div></div>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Why expand?</span>
+                  <p style="font-size:0.82rem;text-align:center">The expansion gives the network more capacity to compute complex transformations — like a "thinking" step where the model can explore ideas in a higher-dimensional space.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2><span class="gradient-text">Stacking</span> 6 Layers</h2>
+              <p>The original Transformer stacks <strong>6 identical encoder layers</strong>. Each layer refines the representation further:</p>
+              <div style="display:flex;flex-direction:column;gap:0.3rem;margin:1rem 0">
+                <div class="anim-box gray" style="text-align:center">Layer 1 — Learns basic patterns (word → nearby word)</div>
+                <div class="anim-box purple" style="text-align:center;opacity:0.7">Layer 2 — More complex syntactic relationships</div>
+                <div class="anim-box cyan" style="text-align:center;opacity:0.75">Layer 3 — Semantic groupings (entities)</div>
+                <div class="anim-box pink" style="text-align:center;opacity:0.8">Layer 4 — Complex cross-sentence patterns</div>
+                <div class="anim-box green" style="text-align:center;opacity:0.85">Layer 5 — Abstract relationships</div>
+                <div class="anim-box amber" style="text-align:center">Layer 6 — Rich contextual representation</div>
+              </div>
+              <p style="font-size:0.82rem;color:var(--text-3)">Modern LLMs like GPT-4 stack <strong>96–120 layers</strong>!</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>Interactive: <span class="gradient-text">Encoder Architecture</span></h2>
+              <p>Here's the complete encoder layer — see how all components fit together:</p>
+              <div class="viz-canvas-wrap" style="height:420px;margin:1rem 0">
+                <canvas id="encoder-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3)">The data flows upward through the layer. Both sub-layers use Add & Layer Norm.</p>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">📚</div>
+          <div>
+            <h4>The Scholar Reading Analogy</h4>
+            <p>Each encoder layer is like a pass through a text by an increasingly expert scholar. The first pass notes individual words. The second pass spots phrases and grammar. Later passes uncover abstract themes, historical context, and deep meaning. Each reading enriches the understanding — that's what 6 (or 96) layers do!</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">📥</div><div class="kc-title">Encoder</div><div class="kc-desc">Reads and encodes the input into rich contextual representations.</div></div>
+            <div class="key-concept"><div class="kc-icon">➕</div><div class="kc-title">Residual Connection</div><div class="kc-desc">x + Sublayer(x) — bypasses each sub-layer to aid gradient flow in deep networks.</div></div>
+            <div class="key-concept"><div class="kc-icon">📊</div><div class="kc-title">Layer Normalization</div><div class="kc-desc">Normalizes activations to zero mean and unit variance — stabilizes training.</div></div>
+            <div class="key-concept"><div class="kc-icon">🧠</div><div class="kc-title">FFN</div><div class="kc-desc">Feed-Forward Network — same MLP applied to each position independently.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="c"
+               data-success-msg="Correct! Each encoder layer has Multi-Head Self-Attention followed by a Feed-Forward Network, both with Add & LayerNorm."
+               data-fail-msg="The encoder layer has two sub-layers: Multi-Head Self-Attention and a Feed-Forward Network.">
+            <p class="quiz-question">What are the two main sub-layers inside each encoder layer?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>Embedding and Positional Encoding</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>Cross-Attention and Masked Attention</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>Multi-Head Self-Attention and Feed-Forward Network</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>LSTM and GRU</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="08-positional-encoding.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Positional Encoding</span></a>
+          <a href="10-decoder.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">The Decoder →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

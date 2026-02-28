@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 1: Introduction — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="01">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:16%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m1">Module 1</span>
+          <span class="topbar-title">Introduction to Transformers</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+
+      <main class="lesson-body">
+        <!-- HEADER -->
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#a78bfa">Module 1 · Foundations</span>
+          <h1>Introduction to <span class="gradient-text">Transformers</span></h1>
+          <p class="desc">Discover what Transformers are, why they exist, and why they changed AI forever.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 8 min read</span>
+            <span class="meta-item">🎯 Lesson 1 of 11</span>
+            <span class="meta-item">🟢 Beginner</span>
+          </div>
+        </div>
+
+        <!-- SLIDESHOW -->
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+
+            <!-- Slide 1 -->
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>What is a <span class="gradient-text">Transformer</span>?</h2>
+              <p>A Transformer is a type of <strong>neural network architecture</strong> specifically designed to understand and generate text (and other sequences).</p>
+              <div class="anim-flow" style="margin: 1.5rem 0">
+                <div class="anim-box purple">You type a message</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box cyan">Transformer processes it</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green">AI responds</div>
+              </div>
+              <p>When you chat with ChatGPT, Claude, or Gemini — <strong>a Transformer is what reads your words and writes the reply</strong>.</p>
+              <div class="highlight-box cyan">
+                💡 <strong>Think of it like this:</strong> A Transformer is the "brain" inside every modern AI language tool.
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>The AI Tools You Already Know</h2>
+              <p>All of these are powered by Transformer models:</p>
+              <div class="anim-flow" style="flex-wrap:wrap; gap:0.75rem; margin:1.25rem 0">
+                <div class="anim-box purple">💬 ChatGPT</div>
+                <div class="anim-box cyan">🤖 Claude</div>
+                <div class="anim-box pink">✨ Gemini</div>
+                <div class="anim-box green">🦙 Llama</div>
+                <div class="anim-box amber">🔍 Copilot</div>
+              </div>
+              <div class="slide-two-col">
+                <div>
+                  <p>They can all:</p>
+                  <ul style="color:var(--text-2);font-size:0.9rem;margin-left:1rem;margin-top:0.5rem">
+                    <li>✅ Write essays and code</li>
+                    <li>✅ Answer questions</li>
+                    <li>✅ Translate languages</li>
+                    <li>✅ Summarize documents</li>
+                    <li>✅ Have conversations</li>
+                  </ul>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Under the hood</span>
+                  <div style="font-size:2rem;margin:0.5rem 0">⚡</div>
+                  <div class="anim-box purple" style="width:100%;text-align:center">Transformer Architecture</div>
+                  <div style="font-size:0.75rem;color:var(--text-3);text-align:center">All these tools share the same core design</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2>Before Transformers: The Old Way</h2>
+              <p>Before 2017, AI used <strong>Recurrent Neural Networks (RNNs)</strong> to process text. They worked like reading a book — one word at a time, left to right.</p>
+              <div class="anim-flow" style="margin:1.25rem 0">
+                <div class="anim-box gray">The</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box gray">cat</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box gray">sat</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box gray">on</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box gray">the</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box gray">mat</div>
+              </div>
+              <p>The problem? By the time the model reached "mat", it had <strong>almost forgotten</strong> the word "cat" — like losing the beginning of a story.</p>
+              <div class="highlight-box" style="border-left-color:#ef4444;background:rgba(239,68,68,0.08)">
+                ❌ <strong>The Memory Problem:</strong> RNNs struggle with long sentences. The further back information is, the harder it is to use.
+              </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>The 2017 Revolution</h2>
+              <div class="slide-two-col">
+                <div>
+                  <p>In June 2017, a team at Google published a paper titled:</p>
+                  <div class="highlight-box amber" style="margin:1rem 0">
+                    <strong>"Attention Is All You Need"</strong><br>
+                    <span style="font-size:0.82rem;color:var(--text-2)">Vaswani et al., 2017</span>
+                  </div>
+                  <p>This paper introduced the <strong>Transformer architecture</strong> — a completely new way to process sequences that solved all the problems of RNNs.</p>
+                  <p style="margin-top:0.75rem">The key idea: instead of reading left-to-right, look at <strong>all words simultaneously</strong>.</p>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">New approach</span>
+                  <div style="font-size:1.2rem;font-weight:700;color:#fbbf24;margin:0.5rem 0">"Attention<br>Is All<br>You Need"</div>
+                  <div style="font-size:0.75rem;color:var(--text-3)">The most cited AI paper<br>of the modern era</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2>The Key Insight: <span class="gradient-text">Attention</span></h2>
+              <p>Transformers introduced a mechanism called <strong>Attention</strong> — the ability for every word in a sentence to directly "look at" every other word.</p>
+              <div style="background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:0.9rem;margin-bottom:0.75rem;color:var(--text-1)">Example: "The animal didn't cross the street because <strong>it</strong> was too tired."</p>
+                <div class="token-row">
+                  <span class="token t1">The</span>
+                  <span class="token t2">animal</span>
+                  <span class="token t3">didn't</span>
+                  <span class="token t4">cross</span>
+                  <span class="token t5">the</span>
+                  <span class="token t6">street</span>
+                  <span class="token t1">because</span>
+                  <span class="token t2" style="font-weight:800;box-shadow:0 0 12px rgba(167,139,250,0.6)">it</span>
+                  <span class="token t3">was</span>
+                  <span class="token t4">too</span>
+                  <span class="token t5">tired</span>
+                </div>
+                <p style="font-size:0.82rem;color:#a78bfa;margin-top:0.5rem">⚡ What does "it" refer to? Attention helps the model figure out: "it" = "animal" (not "street")</p>
+              </div>
+              <p>Without attention, this is very hard. With attention, the model can directly connect "it" with "animal" regardless of distance.</p>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>Your Learning <span class="gradient-text">Roadmap</span></h2>
+              <p>Here's what we'll cover in this course, step by step:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div><strong>Tokenization</strong> — How text becomes numbers</div></div>
+                <div class="step-item"><div class="step-num">2</div><div><strong>Embeddings</strong> — Rich representations of words</div></div>
+                <div class="step-item"><div class="step-num">3</div><div><strong>Attention</strong> — The revolutionary mechanism</div></div>
+                <div class="step-item"><div class="step-num">4</div><div><strong>Architecture</strong> — Encoders, Decoders, full picture</div></div>
+                <div class="step-item"><div class="step-num">5</div><div><strong>Modern LLMs</strong> — GPT, BERT, Claude, and more</div></div>
+              </div>
+              <div class="highlight-box green" style="margin-top:1rem">
+                ✅ No calculus needed. No PhD required. Just curiosity!
+              </div>
+            </div>
+          </div>
+
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <!-- ANALOGY -->
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🏛️</div>
+          <div>
+            <h4>The United Nations Analogy</h4>
+            <p>Think of a Transformer like a UN translation booth. When a speaker talks, the translator needs to understand the whole speech's context, not just each word one at a time. The Transformer does exactly this — it processes the whole input simultaneously.</p>
+          </div>
+        </div>
+
+        <!-- KEY CONCEPTS -->
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept">
+              <div class="kc-icon">⚡</div>
+              <div class="kc-title">Transformer</div>
+              <div class="kc-desc">A neural network architecture that processes entire sequences simultaneously using attention.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">👁️</div>
+              <div class="kc-title">Attention Mechanism</div>
+              <div class="kc-desc">Allows each word to "look at" all other words to understand context.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">🔄</div>
+              <div class="kc-title">RNN vs Transformer</div>
+              <div class="kc-desc">RNNs process sequentially and forget. Transformers process in parallel and attend to all positions.</div>
+            </div>
+            <div class="key-concept">
+              <div class="kc-icon">📄</div>
+              <div class="kc-title">"Attention Is All You Need"</div>
+              <div class="kc-desc">The 2017 Google paper that introduced the Transformer. The most impactful AI paper of the decade.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUIZ -->
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="b"
+               data-success-msg="Correct! Transformers use attention to look at all words simultaneously."
+               data-fail-msg="The key advantage is parallel processing with attention, not sequential reading.">
+            <p class="quiz-question">What is the main advantage of Transformers over RNNs?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>They use more memory</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>They can look at all words simultaneously using attention</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>They process text one word at a time, more carefully</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>They were invented before RNNs</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <!-- NAV FOOTER -->
+        <div class="lesson-nav-footer">
+          <div></div>
+          <a href="02-tokenization.html" class="nav-next">
+            <div><span class="nav-label">Next Lesson</span><span class="nav-title">Tokenization →</span></div>
+          </a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

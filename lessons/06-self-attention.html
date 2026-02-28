@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 6: Self-Attention — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="06">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:54%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m2">Module 2</span>
+          <span class="topbar-title">Self-Attention</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#38bdf8">Module 2 · Attention</span>
+          <h1><span class="gradient-text">Self-Attention</span> in Practice</h1>
+          <p class="desc">Dive deep into self-attention — where a sequence attends to itself. See the step-by-step calculation with real numbers.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 12 min</span>
+            <span class="meta-item">🎯 Lesson 6 of 11</span>
+            <span class="meta-item">⭐ Core Concept</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>What is <span class="gradient-text">Self-Attention</span>?</h2>
+              <p>In <em>self-attention</em>, the Queries, Keys, and Values <strong>all come from the same sequence</strong>. Every word attends to every other word in the same sentence — including itself.</p>
+              <div class="highlight-box cyan" style="margin:1rem 0">
+                💡 "Self" means the sequence is attending to <em>itself</em>. It's not comparing to an external database — it's exploring its own internal relationships.
+              </div>
+              <p>This allows the model to understand how every word in a sentence relates to every other word, all at once.</p>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1rem;margin-top:1rem">
+                <p style="font-size:0.85rem;margin-bottom:0.5rem;color:var(--text-2)">Every word creates 3 projections from its embedding:</p>
+                <div class="anim-flow">
+                  <div class="anim-box gray">embedding</div>
+                  <span class="anim-arrow">×W_Q</span>
+                  <div class="anim-box purple">Query</div>
+                </div>
+                <div class="anim-flow" style="margin-top:0.3rem">
+                  <div class="anim-box gray">embedding</div>
+                  <span class="anim-arrow">×W_K</span>
+                  <div class="anim-box cyan">Key</div>
+                </div>
+                <div class="anim-flow" style="margin-top:0.3rem">
+                  <div class="anim-box gray">embedding</div>
+                  <span class="anim-arrow">×W_V</span>
+                  <div class="anim-box green">Value</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>The <span class="gradient-text">Weight Matrices</span> W_Q, W_K, W_V</h2>
+              <p>Each word embedding is multiplied by three different learned weight matrices to produce Q, K, and V:</p>
+              <div class="slide-two-col">
+                <div>
+                  <div class="step-list">
+                    <div class="step-item"><div class="step-num" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">Q</div><div><strong>W_Q</strong> — Projects embeddings into "what I'm looking for" space</div></div>
+                    <div class="step-item"><div class="step-num" style="background:linear-gradient(135deg,#0891b2,#38bdf8)">K</div><div><strong>W_K</strong> — Projects embeddings into "what I have to offer" space</div></div>
+                    <div class="step-item"><div class="step-num" style="background:linear-gradient(135deg,#059669,#34d399)">V</div><div><strong>W_V</strong> — Projects embeddings into "my actual information" space</div></div>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Weight matrix sizes</span>
+                  <div style="font-family:var(--font-mono);font-size:0.78rem;text-align:left">
+                    <div style="color:#a78bfa">W_Q: [d_model × d_k]</div>
+                    <div style="color:#38bdf8;margin-top:0.3rem">W_K: [d_model × d_k]</div>
+                    <div style="color:#34d399;margin-top:0.3rem">W_V: [d_model × d_v]</div>
+                    <div style="color:var(--text-3);margin-top:0.5rem;font-size:0.72rem">d_model=512, d_k=d_v=64<br>(in original paper)</div>
+                  </div>
+                </div>
+              </div>
+              <div class="highlight-box amber" style="margin-top:1rem">
+                💡 These matrices W_Q, W_K, W_V are learned during training. The model learns what types of relationships are useful to pay attention to.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2>Step by Step: <span class="gradient-text">Computing Self-Attention</span></h2>
+              <p>Let's trace through a simple 3-word sentence: <strong>"I love AI"</strong></p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">1</div>
+                  <div>Each word gets an embedding: I=[1,0], love=[0,1], AI=[1,1] (simplified)</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">2</div>
+                  <div>Multiply each by W_Q, W_K, W_V → get Q, K, V vectors for each word</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">3</div>
+                  <div>For each Query, compute dot products with all Keys → raw scores</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">4</div>
+                  <div>Divide by √d_k (e.g., √64=8), apply softmax → attention weights</div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">5</div>
+                  <div>Multiply weights by Values and sum → new enriched representation</div>
+                </div>
+              </div>
+              <p style="font-size:0.82rem;color:var(--text-3)">The output for each word is a weighted mix of all other words' values — enriched with context!</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>Visualizing <span class="gradient-text">What Gets Learned</span></h2>
+              <p>After training, attention patterns reveal meaningful linguistic structure. Here's what different words attend to in "The animal was tired":</p>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:1rem">Attention patterns (simplified):</p>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.83rem">
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <span class="token t1" style="min-width:60px;text-align:center">The</span>
+                    <span style="color:var(--text-3)">→ attends mostly to →</span>
+                    <span class="token t2">animal</span>
+                    <span style="color:var(--text-3);font-size:0.75rem">(its noun)</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <span class="token t2" style="min-width:60px;text-align:center">animal</span>
+                    <span style="color:var(--text-3)">→ attends mostly to →</span>
+                    <span class="token t4">tired</span>
+                    <span style="color:var(--text-3);font-size:0.75rem">(its adjective)</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <span class="token t4" style="min-width:60px;text-align:center">tired</span>
+                    <span style="color:var(--text-3)">→ attends mostly to →</span>
+                    <span class="token t2">animal</span>
+                    <span style="color:var(--text-3);font-size:0.75rem">(what's tired)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="highlight-box green">
+                ✅ The model learns to connect semantically related words without being explicitly programmed to do so!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2>Self-Attention: <span class="gradient-text">Interactive Visualization</span></h2>
+              <p>The bar chart below shows how "tired" distributes its attention across the sentence "The animal was tired":</p>
+              <div class="viz-canvas-wrap" style="height:220px;margin:1rem 0">
+                <canvas id="self-attn-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <div class="highlight-box" style="margin-top:0.5rem">
+                🔍 "tired" pays the most attention (65%) to "animal" — because semantically, "animal" is the subject of being tired. This is how the model resolves meaning!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>Why <span class="gradient-text">"Self"</span>-Attention?</h2>
+              <p>The beauty of self-attention is that it's <strong>universal</strong> — it works for any relationship in a sequence:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div><strong>Coreference:</strong> "it" → "the animal" (pronoun resolution)</div></div>
+                <div class="step-item"><div class="step-num">2</div><div><strong>Agreement:</strong> "cats" → "are" (subject-verb agreement)</div></div>
+                <div class="step-item"><div class="step-num">3</div><div><strong>Modification:</strong> "big" → "dog" (adjective-noun)</div></div>
+                <div class="step-item"><div class="step-num">4</div><div><strong>Semantic:</strong> "Paris" → "France" (entity-location)</div></div>
+              </div>
+              <div class="highlight-box amber">
+                💡 The model isn't programmed with grammar rules — it discovers these relationships by itself during training, purely through learning the best way to predict the next word!
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🌐</div>
+          <div>
+            <h4>The Meeting Room Analogy</h4>
+            <p>Imagine every word in a sentence is a person in a meeting room. In self-attention, every person can send a message directly to every other person. Each person reads all messages and decides how much to listen to each one. The output is everyone's updated understanding based on the whole group's input.</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">🔄</div><div class="kc-title">Self-Attention</div><div class="kc-desc">Attention where Q, K, V all come from the same sequence — the sequence attends to itself.</div></div>
+            <div class="key-concept"><div class="kc-icon">🧮</div><div class="kc-title">W_Q, W_K, W_V</div><div class="kc-desc">Learned weight matrices that project embeddings into Q, K, V spaces.</div></div>
+            <div class="key-concept"><div class="kc-icon">📊</div><div class="kc-title">Attention Matrix</div><div class="kc-desc">An N×N matrix showing how much each token attends to each other token.</div></div>
+            <div class="key-concept"><div class="kc-icon">🌊</div><div class="kc-title">Contextual Embeddings</div><div class="kc-desc">After self-attention, each token's representation includes information from all other tokens.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="b"
+               data-success-msg="Correct! In self-attention, Q, K, and V all come from the same input sequence."
+               data-fail-msg="In self-attention, all three (Q, K, V) are derived from the same sequence — the sequence attends to itself.">
+            <p class="quiz-question">In self-attention, where do the Query, Key, and Value vectors come from?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>Q from input, K and V from a separate encoder</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>All three (Q, K, V) come from the same input sequence via different weight matrices</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>They are randomly initialized and not learned</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>Q from positional encoding, K and V from embeddings</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="05-attention.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Attention Mechanism</span></a>
+          <a href="07-multihead-attention.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">Multi-Head Attention →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

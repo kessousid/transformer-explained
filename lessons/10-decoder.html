@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 10: The Decoder — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="10">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:90%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m3">Module 3</span>
+          <span class="topbar-title">The Decoder</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#f472b6">Module 3 · Architecture</span>
+          <h1>The <span class="gradient-text">Decoder</span></h1>
+          <p class="desc">The decoder generates output one token at a time. Learn about masked attention, cross-attention, and how text is generated.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 12 min</span>
+            <span class="meta-item">🎯 Lesson 10 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 7</div>
+              <h2>The Decoder's <span class="gradient-text">Job</span></h2>
+              <p>The decoder <strong>generates output</strong> token by token, using the encoder's contextual representation and the tokens it has already generated.</p>
+              <div class="anim-flow" style="margin:1.5rem 0;flex-wrap:wrap">
+                <div class="anim-box purple">Encoder Output<br><span style="font-size:0.72rem">(full input context)</span></div>
+                <span class="anim-arrow">+</span>
+                <div class="anim-box cyan">Generated So Far<br><span style="font-size:0.72rem">"Je suis"</span></div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box pink">DECODER</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green">Next Token<br><span style="font-size:0.72rem">"étudiant"</span></div>
+              </div>
+              <p>It's <strong>auto-regressive</strong>: the decoder generates one token, feeds it back in, generates the next, and so on until the sequence is complete.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 7</div>
+              <h2>Three Sub-Layers</h2>
+              <p>Unlike the encoder (2 sub-layers), each decoder layer has <strong>three sub-layers</strong>:</p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num" style="background:linear-gradient(135deg,#be185d,#f472b6)">1</div>
+                  <div><strong style="color:#f472b6">Masked Self-Attention</strong><br><span style="font-size:0.82rem;color:var(--text-2)">Attends to previously generated tokens only (can't peek at future tokens)</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num" style="background:linear-gradient(135deg,#0891b2,#38bdf8)">2</div>
+                  <div><strong style="color:#38bdf8">Cross-Attention (Encoder-Decoder Attention)</strong><br><span style="font-size:0.82rem;color:var(--text-2)">Attends to the encoder's output — this is how the decoder "reads" the input</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num" style="background:linear-gradient(135deg,#059669,#34d399)">3</div>
+                  <div><strong style="color:#34d399">Feed-Forward Network</strong><br><span style="font-size:0.82rem;color:var(--text-2)">Same as encoder — processes each position independently</span></div>
+                </div>
+              </div>
+              <p style="font-size:0.82rem;color:var(--text-3);margin-top:0.5rem">All three have Add & Layer Norm.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 7</div>
+              <h2><span class="gradient-text">Masked</span> Self-Attention</h2>
+              <p>During training, the decoder processes all output tokens in parallel (for efficiency). But we must prevent each token from "cheating" by looking at future tokens.</p>
+              <div class="highlight-box" style="margin:1rem 0">
+                🔒 <strong>Causal Masking:</strong> When computing attention for token at position i, we mask out all positions j &gt; i (set them to -∞ before softmax).
+              </div>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1rem;margin:0.75rem 0;font-size:0.82rem">
+                <p style="margin-bottom:0.5rem;color:var(--text-3)">Generating "I love AI":</p>
+                <div style="display:flex;flex-direction:column;gap:0.4rem">
+                  <div style="display:flex;gap:0.5rem;align-items:center">
+                    <span class="token t1">I</span>
+                    <span style="color:var(--text-3)">→ can only see:</span>
+                    <span class="token t1">I</span>
+                  </div>
+                  <div style="display:flex;gap:0.5rem;align-items:center">
+                    <span class="token t2">love</span>
+                    <span style="color:var(--text-3)">→ can only see:</span>
+                    <span class="token t1">I</span><span class="token t2">love</span>
+                  </div>
+                  <div style="display:flex;gap:0.5rem;align-items:center">
+                    <span class="token t3">AI</span>
+                    <span style="color:var(--text-3)">→ can only see:</span>
+                    <span class="token t1">I</span><span class="token t2">love</span><span class="token t3">AI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 7</div>
+              <h2><span class="gradient-text">Cross-Attention</span></h2>
+              <p>This is where the magic of the Encoder-Decoder architecture happens. In cross-attention:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">Q</div><div><strong>Queries come from the decoder</strong> (what the decoder is currently generating)</div></div>
+                <div class="step-item"><div class="step-num">K</div><div><strong>Keys come from the encoder output</strong> (the encoded input)</div></div>
+                <div class="step-item"><div class="step-num">V</div><div><strong>Values come from the encoder output</strong> (the encoded input)</div></div>
+              </div>
+              <div class="analogy-box" style="margin:1rem 0">
+                <div class="analogy-icon">🗣️</div>
+                <div>
+                  <h4>Translation analogy</h4>
+                  <p>The decoder asks (Q): "What French word should I generate next?" It searches the encoded English (K) to find relevant context, and retrieves the information (V) from those encoder positions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 7</div>
+              <h2><span class="gradient-text">Auto-Regressive</span> Generation</h2>
+              <p>At inference time, the decoder generates one token at a time:</p>
+              <div class="step-list">
+                <div class="step-item"><div class="step-num">1</div><div>Start with &lt;BOS&gt; (beginning of sequence token)</div></div>
+                <div class="step-item"><div class="step-num">2</div><div>Run decoder → get probability distribution over vocabulary</div></div>
+                <div class="step-item"><div class="step-num">3</div><div>Sample or take argmax → choose next token (e.g., "The")</div></div>
+                <div class="step-item"><div class="step-num">4</div><div>Append "The" to the sequence → run decoder again</div></div>
+                <div class="step-item"><div class="step-num">5</div><div>Repeat until &lt;EOS&gt; (end of sequence) is generated</div></div>
+              </div>
+              <div class="highlight-box amber">
+                💡 This is why LLMs generate text word-by-word! Each token depends on all previous tokens. It's fundamentally sequential at inference time.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 7</div>
+              <h2>The <span class="gradient-text">Output Layer</span></h2>
+              <p>After the final decoder layer, two operations convert the representation to a word:</p>
+              <div class="anim-flow" style="margin:1.25rem 0;flex-direction:column;align-items:center;gap:0.5rem">
+                <div class="anim-box cyan" style="width:80%;text-align:center">Decoder output vector<br><span style="font-size:0.75rem">[d_model dimensions]</span></div>
+                <span style="color:var(--text-3)">↓ Linear projection</span>
+                <div class="anim-box purple" style="width:80%;text-align:center">Logits vector<br><span style="font-size:0.75rem">[vocab_size dimensions — one per token!]</span></div>
+                <span style="color:var(--text-3)">↓ Softmax</span>
+                <div class="anim-box green" style="width:80%;text-align:center">Probability distribution<br><span style="font-size:0.75rem">[sum = 1.0]</span></div>
+                <span style="color:var(--text-3)">↓ Sample / argmax</span>
+                <div class="anim-box amber" style="width:80%;text-align:center">Next token: "hello" (ID: 31373)</div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 7 of 7</div>
+              <h2>Interactive: <span class="gradient-text">Decoder Architecture</span></h2>
+              <div class="viz-canvas-wrap" style="height:420px;margin:1rem 0">
+                <canvas id="decoder-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3)">Note the three sub-layers: Masked Self-Attention, Cross-Attention (from encoder), and FFN. Data flows upward.</p>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 7</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">✍️</div>
+          <div>
+            <h4>The Author Writing a Translation Analogy</h4>
+            <p>Imagine translating a book. You (the decoder) write one word at a time. As you write each word, you look back at what you've already written (masked self-attention), consult the original text (cross-attention to encoder), and then write the next word. This is exactly what the decoder does.</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">🔒</div><div class="kc-title">Masked Self-Attention</div><div class="kc-desc">Prevents decoder from seeing future tokens — only attends to past positions.</div></div>
+            <div class="key-concept"><div class="kc-icon">🌉</div><div class="kc-title">Cross-Attention</div><div class="kc-desc">Q from decoder, K and V from encoder — how decoder reads the input context.</div></div>
+            <div class="key-concept"><div class="kc-icon">🔁</div><div class="kc-title">Auto-Regressive</div><div class="kc-desc">Generating one token at a time, each conditioned on all previous tokens.</div></div>
+            <div class="key-concept"><div class="kc-icon">📊</div><div class="kc-title">Softmax Output</div><div class="kc-desc">Final layer produces probabilities over the entire vocabulary for the next token.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="b"
+               data-success-msg="Correct! Cross-attention lets the decoder query the encoder's representation of the input."
+               data-fail-msg="In cross-attention, the decoder's Q queries the encoder's K and V, letting it access the input context.">
+            <p class="quiz-question">In cross-attention, where do the Queries, Keys, and Values come from?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>All three come from the encoder output</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>Q comes from the decoder, K and V come from the encoder output</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>All three come from the decoder's previous layer</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>Q from the encoder, K and V from the decoder</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="09-encoder.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">The Encoder</span></a>
+          <a href="11-full-transformer.html" class="nav-next"><div><span class="nav-label">Final Lesson</span><span class="nav-title">The Full Transformer →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

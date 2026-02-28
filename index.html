@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transformer Explained — Learn How LLMs Work</title>
+  <meta name="description" content="A free, interactive course explaining how Transformer models and Large Language Models work. Beginner-friendly with animations and visualizations." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .hero-visual {
+      margin-top: 3rem;
+      display: flex; align-items: center; justify-content: center; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .mini-box {
+      padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      min-width: 80px; text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .mini-box:hover { transform: translateY(-4px); }
+    .mini-box .emoji { font-size: 1.4rem; }
+    .mini-arrow { color: var(--text-3); font-size: 1.2rem; }
+    .progress-overview {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.5rem;
+      display: flex; align-items: center; gap: 1.5rem;
+      margin: 3rem auto 0;
+      max-width: 500px;
+      justify-content: center;
+    }
+    .prog-item { text-align: center; }
+    .prog-num { font-size: 1.8rem; font-weight: 800; }
+    .prog-label { font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .prog-divider { width: 1px; height: 36px; background: var(--border-light); }
+    .why-section { background: var(--bg-secondary); }
+    .why-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+    .why-card {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm); padding: 1.5rem;
+    }
+    .why-icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+    .why-card h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+    .why-card p { font-size: 0.85rem; }
+    .module-num.m1 { background: rgba(124,58,237,0.2); color: #a78bfa; }
+    .module-num.m2 { background: rgba(6,182,212,0.15); color: #38bdf8; }
+    .module-num.m3 { background: rgba(236,72,153,0.15); color: #f472b6; }
+    .module-num.m4 { background: rgba(16,185,129,0.15); color: #34d399; }
+    .course-intro-section { background: var(--bg-primary); }
+    .cta-section {
+      background: var(--bg-secondary);
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+    .cta-section h2 { margin-bottom: 1rem; }
+    .cta-section p { max-width: 500px; margin: 0 auto 2rem; }
+  </style>
+</head>
+<body>
+  <!-- ── NAV ── -->
+  <nav class="site-nav">
+    <div class="nav-logo">
+      <div class="logo-icon">⚡</div>
+      Transformer Explained
+    </div>
+    <div class="nav-links">
+      <a href="#modules">Modules</a>
+      <a href="#concepts">Concepts</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="lessons/01-introduction.html" class="btn-start">Start Learning →</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🤖 Free Interactive AI Course</div>
+      <h1>How <span class="gradient-text">Transformers</span> Power Modern AI</h1>
+      <p>A beginner-friendly, interactive course explaining exactly how ChatGPT, Claude, and Gemini work under the hood — no math degree required.</p>
+      <div class="hero-cta">
+        <a href="lessons/01-introduction.html" class="btn-primary">🚀 Start the Course</a>
+        <a href="#modules" class="btn-secondary">📚 View Modules</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="num purple">11</div><div class="label">Lessons</div></div>
+        <div class="stat"><div class="num cyan">4</div><div class="label">Modules</div></div>
+        <div class="stat"><div class="num green" id="progress-count">0</div><div class="label">Completed</div></div>
+      </div>
+
+      <!-- Animated transformer flow -->
+      <div class="hero-visual">
+        <div class="mini-box" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#a78bfa">
+          <span class="emoji">📝</span>Text Input
+        </div>
+        <span class="mini-arrow">→</span>
+        <div class="mini-box" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#38bdf8">
+          <span class="emoji">🔢</span>Tokens
+        </div>
+        <span class="mini-arrow">→</span>
+        <div class="mini-box" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.3);color:#f472b6">
+          <span class="emoji">⚡</span>Attention
+        </div>
+        <span class="mini-arrow">→</span>
+        <div class="mini-box" style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#34d399">
+          <span class="emoji">🧠</span>Encoder
+        </div>
+        <span class="mini-arrow">→</span>
+        <div class="mini-box" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24">
+          <span class="emoji">✨</span>Output
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WHY THIS COURSE ── -->
+  <section class="why-section section">
+    <div class="section-header reveal">
+      <h2>Why Learn About <span class="gradient-text">Transformers</span>?</h2>
+      <p>Transformers are the foundation of every major AI system today. Understanding them gives you superpowers.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="why-icon">🔑</div>
+        <h3>Unlock AI Literacy</h3>
+        <p>Stop treating AI as a black box. Understand what's really happening when you type a prompt.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="why-icon">💼</div>
+        <h3>Career Advantage</h3>
+        <p>AI is everywhere. Engineers, designers, and PMs who understand Transformers stand out.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="why-icon">🏗️</div>
+        <h3>Build Better Apps</h3>
+        <p>Knowing how the model thinks helps you write better prompts and design better AI-powered products.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MODULES / COURSE OVERVIEW ── -->
+  <section id="modules" class="section course-intro-section">
+    <div class="section-header reveal">
+      <h2>Course <span class="gradient-text">Modules</span></h2>
+      <p>11 interactive lessons across 4 modules — from zero to understanding modern LLMs.</p>
+    </div>
+    <div class="modules-grid">
+      <!-- Module 1 -->
+      <div class="module-card reveal">
+        <div class="module-num m1">M1</div>
+        <h3>Foundations</h3>
+        <p>The building blocks — how text becomes numbers that AI can work with.</p>
+        <div class="module-lessons">
+          <a href="lessons/01-introduction.html" class="lesson-link" data-lesson-id="01"><div class="dot"></div>Introduction to Transformers</a>
+          <a href="lessons/02-tokenization.html" class="lesson-link" data-lesson-id="02"><div class="dot"></div>Tokenization</a>
+          <a href="lessons/03-embeddings.html" class="lesson-link" data-lesson-id="03"><div class="dot"></div>Word Embeddings</a>
+        </div>
+      </div>
+      <!-- Module 2 -->
+      <div class="module-card reveal">
+        <div class="module-num m2">M2</div>
+        <h3>The Attention Mechanism</h3>
+        <p>The revolutionary idea that made Transformers possible.</p>
+        <div class="module-lessons">
+          <a href="lessons/04-the-problem.html" class="lesson-link" data-lesson-id="04"><div class="dot"></div>The Sequence Problem</a>
+          <a href="lessons/05-attention.html" class="lesson-link" data-lesson-id="05"><div class="dot"></div>Attention Mechanism</a>
+          <a href="lessons/06-self-attention.html" class="lesson-link" data-lesson-id="06"><div class="dot"></div>Self-Attention</a>
+          <a href="lessons/07-multihead-attention.html" class="lesson-link" data-lesson-id="07"><div class="dot"></div>Multi-Head Attention</a>
+        </div>
+      </div>
+      <!-- Module 3 -->
+      <div class="module-card reveal">
+        <div class="module-num m3">M3</div>
+        <h3>The Architecture</h3>
+        <p>How all the pieces fit together into the full Transformer model.</p>
+        <div class="module-lessons">
+          <a href="lessons/08-positional-encoding.html" class="lesson-link" data-lesson-id="08"><div class="dot"></div>Positional Encoding</a>
+          <a href="lessons/09-encoder.html" class="lesson-link" data-lesson-id="09"><div class="dot"></div>The Encoder</a>
+          <a href="lessons/10-decoder.html" class="lesson-link" data-lesson-id="10"><div class="dot"></div>The Decoder</a>
+        </div>
+      </div>
+      <!-- Module 4 -->
+      <div class="module-card reveal">
+        <div class="module-num m4">M4</div>
+        <h3>Modern LLMs</h3>
+        <p>From the original Transformer to GPT-4, Claude, and beyond.</p>
+        <div class="module-lessons">
+          <a href="lessons/11-full-transformer.html" class="lesson-link" data-lesson-id="11"><div class="dot"></div>The Full Transformer & LLMs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── KEY CONCEPTS ── -->
+  <section id="concepts" class="section concepts-section">
+    <div class="section-header reveal">
+      <h2>Key <span class="gradient-text">Concepts</span> You'll Learn</h2>
+      <p>Every concept explained with analogies, animations, and interactive demos.</p>
+    </div>
+    <div class="concepts-grid">
+      <div class="concept-card reveal"><div class="concept-icon">🔤</div><div><h4>Tokenization</h4><p>How text is split into processable chunks</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">📍</div><div><h4>Embeddings</h4><p>Representing words as coordinates in space</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">👁️</div><div><h4>Attention</h4><p>The mechanism that lets tokens "talk" to each other</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">🎯</div><div><h4>Q, K, V</h4><p>Query, Key, Value — the library analogy</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">🔀</div><div><h4>Multi-Head</h4><p>Multiple attention heads capture different patterns</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">📍</div><div><h4>Positional Encoding</h4><p>Injecting word order into the model</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">📥</div><div><h4>Encoder</h4><p>Understanding and encoding the input</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">📤</div><div><h4>Decoder</h4><p>Generating output token by token</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">🦾</div><div><h4>LLMs</h4><p>How GPT, BERT, and Claude are built</p></div></div>
+      <div class="concept-card reveal"><div class="concept-icon">🎓</div><div><h4>Training</h4><p>How Transformers learn from data</p></div></div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <h2>Ready to <span class="gradient-text">Understand AI</span>?</h2>
+    <p>Start with Lesson 1 and work your way through. No prior knowledge required.</p>
+    <a href="lessons/01-introduction.html" class="btn-primary">Begin Lesson 1: Introduction →</a>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>Built with ❤️ for AI learners everywhere &nbsp;|&nbsp;
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank">Based on "Attention Is All You Need" (2017)</a></p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', updateLandingProgress);
+  </script>
+</body>
+</html>

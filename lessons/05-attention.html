@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 5: Attention Mechanism — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="05">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:45%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m2">Module 2</span>
+          <span class="topbar-title">Attention Mechanism</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#38bdf8">Module 2 · Attention</span>
+          <h1>The <span class="gradient-text">Attention Mechanism</span></h1>
+          <p class="desc">The core innovation of Transformers. Learn how "attention" lets every word focus on what matters most.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 12 min</span>
+            <span class="meta-item">🎯 Lesson 5 of 11</span>
+            <span class="meta-item">⭐ Core Concept</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 7</div>
+              <h2>What is <span class="gradient-text">Attention</span>?</h2>
+              <p>Attention is a mechanism that lets a model <strong>selectively focus</strong> on different parts of the input when processing each element.</p>
+              <div class="analogy-box" style="margin:1rem 0">
+                <div class="analogy-icon">📖</div>
+                <div>
+                  <h4>Human Reading Analogy</h4>
+                  <p>When you read "The bank was steep and muddy from the rain", you look back at context to determine whether "bank" means a financial institution or a river bank. You <em>attend</em> to "steep", "muddy", and "rain" to understand "bank".</p>
+                </div>
+              </div>
+              <p>Transformers do the same thing mathematically — every token computes a weighted blend of all other tokens based on relevance.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 7</div>
+              <h2>The <span class="gradient-text">Library Analogy</span></h2>
+              <p>Attention can be understood as a <strong>fuzzy database lookup</strong>:</p>
+              <div class="step-list">
+                <div class="step-item">
+                  <div class="step-num">Q</div>
+                  <div><strong style="color:#a78bfa">Query</strong> — What you're looking for. <span style="color:var(--text-3)">"I want books about machine learning"</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">K</div>
+                  <div><strong style="color:#38bdf8">Keys</strong> — Index cards describing each item. <span style="color:var(--text-3)">"Neural Networks", "Cooking", "History"...</span></div>
+                </div>
+                <div class="step-item">
+                  <div class="step-num">V</div>
+                  <div><strong style="color:#34d399">Values</strong> — The actual content of each item. <span style="color:var(--text-3)">The books themselves.</span></div>
+                </div>
+              </div>
+              <div class="anim-flow" style="margin-top:1rem">
+                <div class="anim-box purple">Query</div>
+                <span class="anim-arrow">⊗</span>
+                <div class="anim-box cyan">Keys</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box amber">Scores</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box pink">Softmax</div>
+                <span class="anim-arrow">→</span>
+                <div class="anim-box green">Weighted Values</div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 7</div>
+              <h2>Step 1: <span class="gradient-text">Compute Attention Scores</span></h2>
+              <p>For each query token, we compute how similar it is to every key (including itself). Similarity = dot product.</p>
+              <div class="math-formula">score(Q, K) = Q · Kᵀ</div>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:0.75rem">Example — Computing scores for the word "tired":</p>
+                <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.85rem">
+                  <div style="display:flex;justify-content:space-between"><span>"tired" vs "The":</span><span style="color:var(--text-3)">0.1 (low relevance)</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>"tired" vs "animal":</span><span style="color:#a78bfa;font-weight:600">0.9 (HIGH — animal is what's tired!)</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>"tired" vs "was":</span><span style="color:var(--text-3)">0.2</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>"tired" vs "tired":</span><span style="color:#38bdf8">0.7 (self-attention)</span></div>
+                </div>
+              </div>
+              <div class="highlight-box cyan">
+                💡 The dot product is high when two vectors point in similar directions — meaning the Query and Key are semantically similar.
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 7</div>
+              <h2>Step 2: <span class="gradient-text">Scale and Softmax</span></h2>
+              <p>Raw dot products can get very large, causing gradients to vanish. So we <strong>scale</strong> them first:</p>
+              <div class="math-formula">scaled_score = Q · Kᵀ / √d_k</div>
+              <p style="font-size:0.85rem">Where <code>d_k</code> is the dimension of the key vectors (e.g., 64). This keeps values in a stable range.</p>
+              <p style="margin-top:0.75rem">Then we apply <strong>Softmax</strong> to convert scores into probabilities that <em>sum to 1</em>:</p>
+              <div class="math-formula">attention_weights = softmax(scaled_score)</div>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1rem;margin:0.75rem 0;font-size:0.85rem">
+                <p style="margin-bottom:0.5rem">After softmax, "tired" → all tokens:</p>
+                <div class="token-row" style="align-items:center">
+                  <span class="token t1">The: 5%</span>
+                  <span class="token t2" style="font-weight:800">animal: 65%</span>
+                  <span class="token t3">was: 10%</span>
+                  <span class="token t4">tired: 20%</span>
+                </div>
+                <p style="font-size:0.75rem;color:var(--text-3);margin-top:0.4rem">✅ All weights sum to 100%</p>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 7</div>
+              <h2>Step 3: <span class="gradient-text">Weighted Sum of Values</span></h2>
+              <p>Finally, multiply each Value vector by its attention weight and sum them all up:</p>
+              <div class="math-formula">output = Σ (attention_weight × Value)</div>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0;font-size:0.85rem">
+                <p style="margin-bottom:0.75rem;color:var(--text-3)">For "tired" computing its output vector:</p>
+                <div style="font-family:var(--font-mono);font-size:0.8rem;line-height:1.8">
+                  <div>output = <span style="color:#a78bfa">0.65 × V("animal")</span></div>
+                  <div>       + <span style="color:#38bdf8">0.20 × V("tired")</span></div>
+                  <div>       + <span style="color:#34d399">0.10 × V("was")</span></div>
+                  <div>       + <span style="color:var(--text-3)">0.05 × V("The")</span></div>
+                </div>
+              </div>
+              <p>The output for "tired" is mostly influenced by "animal" (65%) — so the model now understands that "tired" relates to the animal!</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 7</div>
+              <h2>The Complete <span class="gradient-text">Formula</span></h2>
+              <p>Putting it all together in one elegant equation:</p>
+              <div class="math-formula" style="font-size:1.1rem">Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V</div>
+              <div class="step-list" style="margin-top:1rem">
+                <div class="step-item"><div class="step-num">1</div><div><code>QKᵀ</code> — Dot product of all queries and keys (similarity scores)</div></div>
+                <div class="step-item"><div class="step-num">2</div><div><code>/ √d_k</code> — Scale to prevent exploding values</div></div>
+                <div class="step-item"><div class="step-num">3</div><div><code>softmax()</code> — Convert scores to probabilities (sum to 1)</div></div>
+                <div class="step-item"><div class="step-num">4</div><div><code>· V</code> — Weight and sum the value vectors</div></div>
+              </div>
+              <div class="highlight-box amber">
+                💡 This simple formula is done in parallel for ALL tokens simultaneously using matrix multiplication — incredibly efficient on GPUs!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 7 of 7</div>
+              <h2>Attention is <span class="gradient-text">Differentiable</span></h2>
+              <p>A key property: attention weights are computed by a smooth, differentiable function. This means the model can <strong>learn</strong> which things to attend to through gradient descent.</p>
+              <div class="slide-two-col">
+                <div>
+                  <p style="margin-bottom:0.75rem">What gets learned:</p>
+                  <div class="step-list">
+                    <div class="step-item"><div class="step-num">✓</div><div>Which words are relevant to which</div></div>
+                    <div class="step-item"><div class="step-num">✓</div><div>Syntactic relationships (subject-verb)</div></div>
+                    <div class="step-item"><div class="step-num">✓</div><div>Semantic connections (pronoun-noun)</div></div>
+                    <div class="step-item"><div class="step-num">✓</div><div>Long-range dependencies</div></div>
+                  </div>
+                </div>
+                <div class="slide-visual">
+                  <span class="visual-label">Magic of gradients</span>
+                  <p style="font-size:0.82rem;text-align:center">The model doesn't need to be told what to attend to — it figures it out during training from millions of examples!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 7</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE VIZ -->
+        <div class="viz-section reveal">
+          <div class="viz-title">🎯 Interactive: Attention Weights</div>
+          <div class="viz-desc">Click a word to see how much it "attends to" each other word in the sentence.</div>
+          <div class="attention-controls">
+            <button class="attn-word-btn active" data-word="The">The</button>
+            <button class="attn-word-btn" data-word="cat">cat</button>
+            <button class="attn-word-btn" data-word="sat">sat</button>
+            <button class="attn-word-btn" data-word="on">on</button>
+            <button class="attn-word-btn" data-word="the">the</button>
+            <button class="attn-word-btn" data-word="mat">mat</button>
+          </div>
+          <div class="viz-canvas-wrap" style="height:280px">
+            <canvas id="attention-canvas" style="width:100%;height:100%"></canvas>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-3);margin-top:0.5rem">Brighter cells = higher attention weight. Each row = one query word attending to all other words.</p>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">❓</div><div class="kc-title">Query (Q)</div><div class="kc-desc">What the current token is "looking for" in other tokens.</div></div>
+            <div class="key-concept"><div class="kc-icon">🔑</div><div class="kc-title">Key (K)</div><div class="kc-desc">What each token "offers" to be found — describes its content.</div></div>
+            <div class="key-concept"><div class="kc-icon">💎</div><div class="kc-title">Value (V)</div><div class="kc-desc">The actual information of each token, passed along when attended to.</div></div>
+            <div class="key-concept"><div class="kc-icon">🌡️</div><div class="kc-title">Softmax</div><div class="kc-desc">Converts raw scores into probabilities that sum to 1.0.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="d"
+               data-success-msg="Correct! Attention weights tell the model how much to weight each value when computing the output for a given query."
+               data-fail-msg="Attention weights represent how much each token should contribute to the output — they're probabilities that sum to 1.">
+            <p class="quiz-question">What do attention weights represent in the formula Attention(Q,K,V) = softmax(QKᵀ/√d_k)·V?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>The size of the vocabulary</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>The position of each token</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>The learning rate</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>How much each token contributes to the output (probabilities summing to 1)</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="04-the-problem.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">The Sequence Problem</span></a>
+          <a href="06-self-attention.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">Self-Attention →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

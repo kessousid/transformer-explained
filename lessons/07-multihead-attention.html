@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 7: Multi-Head Attention — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="07">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:63%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m2">Module 2</span>
+          <span class="topbar-title">Multi-Head Attention</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#38bdf8">Module 2 · Attention</span>
+          <h1><span class="gradient-text">Multi-Head Attention</span></h1>
+          <p class="desc">Why one attention head isn't enough — and how running multiple attention mechanisms in parallel gives richer understanding.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 10 min</span>
+            <span class="meta-item">🎯 Lesson 7 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 5</div>
+              <h2>One Head <span class="gradient-text">Isn't Enough</span></h2>
+              <p>A single attention head can only focus on <em>one type</em> of relationship at a time. But language has many simultaneous relationships:</p>
+              <div class="step-list" style="margin:1rem 0">
+                <div class="step-item"><div class="step-num">1</div><div><strong>Syntactic:</strong> Subject → Verb agreement ("The cats <em>are</em>")</div></div>
+                <div class="step-item"><div class="step-num">2</div><div><strong>Semantic:</strong> Word meaning in context ("bank" = river or finance?)</div></div>
+                <div class="step-item"><div class="step-num">3</div><div><strong>Positional:</strong> Nearby words tend to be related</div></div>
+                <div class="step-item"><div class="step-num">4</div><div><strong>Coreference:</strong> Pronouns → their referents</div></div>
+              </div>
+              <div class="highlight-box cyan">
+                💡 Solution: Run several attention heads in <strong>parallel</strong>, each learning to capture a different type of relationship!
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 5</div>
+              <h2>Multiple <span class="gradient-text">Perspectives</span></h2>
+              <p>Each head has its own W_Q, W_K, W_V matrices — so each head learns to attend to different things:</p>
+              <div class="slide-two-col">
+                <div>
+                  <div style="display:flex;flex-direction:column;gap:0.6rem">
+                    <div style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:8px;padding:0.75rem">
+                      <strong style="color:#a78bfa">Head 1</strong><br>
+                      <span style="font-size:0.82rem;color:var(--text-2)">Learns: Subject-Verb relationships<br>"cats" → "are"</span>
+                    </div>
+                    <div style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:0.75rem">
+                      <strong style="color:#38bdf8">Head 2</strong><br>
+                      <span style="font-size:0.82rem;color:var(--text-2)">Learns: Noun-Adjective relationships<br>"big" → "dog"</span>
+                    </div>
+                    <div style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:0.75rem">
+                      <strong style="color:#34d399">Head 3</strong><br>
+                      <span style="font-size:0.82rem;color:var(--text-2)">Learns: Coreference<br>"it" → "the cat"</span>
+                    </div>
+                    <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:0.75rem">
+                      <strong style="color:#fbbf24">Head 4</strong><br>
+                      <span style="font-size:0.82rem;color:var(--text-2)">Learns: Positional proximity<br>adjacent words</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="slide-visual" style="align-self:center">
+                  <span class="visual-label">GPT-3 has 96 heads</span>
+                  <div style="font-size:0.82rem;text-align:center;margin-top:0.5rem">
+                    Original Transformer:<br><strong style="color:#a78bfa">h = 8 heads</strong>
+                    <br><br>GPT-3:<br><strong style="color:#38bdf8">h = 96 heads</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 5</div>
+              <h2>The <span class="gradient-text">MHA Formula</span></h2>
+              <p>Multi-Head Attention concatenates the output of all heads, then projects:</p>
+              <div class="math-formula">MultiHead(Q,K,V) = Concat(head₁, ..., headₕ) · W_O</div>
+              <p style="font-size:0.85rem;margin:0.75rem 0">where each head is:</p>
+              <div class="math-formula" style="font-size:0.9rem">headᵢ = Attention(Q·W_Qᵢ, K·W_Kᵢ, V·W_Vᵢ)</div>
+              <div class="step-list" style="margin-top:1rem">
+                <div class="step-item"><div class="step-num">1</div><div>Each head runs attention with its own learned W_Q, W_K, W_V</div></div>
+                <div class="step-item"><div class="step-num">2</div><div>Each head produces an output vector of size d_v (e.g., 64)</div></div>
+                <div class="step-item"><div class="step-num">3</div><div>All h outputs are concatenated → h × d_v dimensions (e.g., 8 × 64 = 512)</div></div>
+                <div class="step-item"><div class="step-num">4</div><div>W_O projects back to d_model dimensions (e.g., 512)</div></div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 5</div>
+              <h2>Interactive: <span class="gradient-text">Head Visualization</span></h2>
+              <p>Here's a visualization of 4 attention heads running in parallel for the same sentence:</p>
+              <div class="viz-canvas-wrap" style="height:320px;margin:1rem 0">
+                <canvas id="multihead-canvas" style="width:100%;height:100%"></canvas>
+              </div>
+              <p style="font-size:0.8rem;color:var(--text-3)">Each head processes the same input but through different learned projections, capturing different patterns.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 5</div>
+              <h2>Why This is <span class="gradient-text">Powerful</span></h2>
+              <p>Multi-Head Attention gives the model the ability to simultaneously understand:</p>
+              <div class="anim-flow" style="flex-wrap:wrap;gap:0.5rem;margin:1rem 0">
+                <div class="anim-box purple">Grammar</div>
+                <div class="anim-box cyan">Semantics</div>
+                <div class="anim-box pink">Coreference</div>
+                <div class="anim-box green">Proximity</div>
+                <div class="anim-box amber">Discourse</div>
+              </div>
+              <p>...all from the same layer, in one forward pass.</p>
+              <div class="highlight-box green" style="margin-top:1rem">
+                ✅ The model isn't told which head should learn what — it discovers the most useful division of labor during training!
+              </div>
+              <div class="highlight-box amber" style="margin-top:0.75rem">
+                ⚡ <strong>Compute efficiency:</strong> Each head works on a smaller d_k (d_model/h), so total compute is similar to one full-size head — but with h times more expressive power!
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 5</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">🎭</div>
+          <div>
+            <h4>The Expert Panel Analogy</h4>
+            <p>Imagine a committee of experts reviewing a document. The grammar expert focuses on sentence structure, the content expert on meaning, the fact-checker on references, and the rhetorician on tone. Multi-Head Attention is like this — each head is a different expert examining the text, and their conclusions are combined for a complete picture.</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">🔀</div><div class="kc-title">Multi-Head Attention</div><div class="kc-desc">Running h attention heads in parallel, each with different learned projections.</div></div>
+            <div class="key-concept"><div class="kc-icon">🔢</div><div class="kc-title">h (number of heads)</div><div class="kc-desc">Original Transformer: h=8. Modern models: up to h=96 or more.</div></div>
+            <div class="key-concept"><div class="kc-icon">📎</div><div class="kc-title">Concatenation</div><div class="kc-desc">Head outputs are concatenated, then projected by W_O back to d_model size.</div></div>
+            <div class="key-concept"><div class="kc-icon">📐</div><div class="kc-title">d_k = d_model / h</div><div class="kc-desc">Each head works in a lower dimension (d_model/h) keeping total compute constant.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="c"
+               data-success-msg="Correct! Each head learns different types of relationships — grammar, semantics, coreference, etc."
+               data-fail-msg="Multiple heads allow the model to capture different types of relationships simultaneously from the same input.">
+            <p class="quiz-question">Why does Multi-Head Attention use multiple heads instead of one big attention head?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>To increase the vocabulary size</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>To process multiple sentences at once</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>Each head can learn to capture different types of relationships simultaneously</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>To reduce memory usage</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="06-self-attention.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Self-Attention</span></a>
+          <a href="08-positional-encoding.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">Positional Encoding →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lesson 4: The Sequence Problem — Transformer Explained</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body data-lesson-id="04">
+  <div class="lesson-progress-bar"><div class="lesson-progress-fill" id="progress-fill" style="width:36%"></div></div>
+  <div class="lesson-layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="lesson-content">
+      <header class="lesson-topbar">
+        <div class="topbar-lesson-info">
+          <span class="topbar-module-badge badge-m2">Module 2</span>
+          <span class="topbar-title">The Sequence Problem</span>
+        </div>
+        <div class="topbar-nav">
+          <button class="topbar-btn" id="topbar-prev">← Prev</button>
+          <button class="topbar-btn" id="topbar-next">Next →</button>
+        </div>
+      </header>
+      <main class="lesson-body">
+        <div class="lesson-header">
+          <span class="module-tag" style="color:#38bdf8">Module 2 · Attention</span>
+          <h1>The <span class="gradient-text">Sequence Problem</span></h1>
+          <p class="desc">Why did we need a new architecture? Understanding the limitations of sequential models and why attention was the solution.</p>
+          <div class="lesson-meta">
+            <span class="meta-item">⏱️ 9 min</span>
+            <span class="meta-item">🎯 Lesson 4 of 11</span>
+          </div>
+        </div>
+
+        <div class="slideshow-container" id="slideshow">
+          <div class="slides-wrapper">
+            <div class="slide active">
+              <div class="slide-num">Slide 1 of 6</div>
+              <h2>How <span class="gradient-text">RNNs</span> Worked</h2>
+              <p>Before Transformers, AI used <strong>Recurrent Neural Networks (RNNs)</strong>. They processed text like we read: one word at a time, left to right, building up a "memory" as they go.</p>
+              <div style="margin:1.25rem 0">
+                <div class="anim-flow" style="flex-direction:column;align-items:flex-start;gap:0.5rem">
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="anim-box gray" style="min-width:70px;text-align:center">The</div>
+                    <span class="anim-arrow">→</span>
+                    <div class="anim-box purple" style="min-width:120px;text-align:center">Memory: "The"</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="anim-box gray" style="min-width:70px;text-align:center">cat</div>
+                    <span class="anim-arrow">→</span>
+                    <div class="anim-box purple" style="min-width:120px;text-align:center">Memory: "The cat"</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="anim-box gray" style="min-width:70px;text-align:center">sat</div>
+                    <span class="anim-arrow">→</span>
+                    <div class="anim-box cyan" style="min-width:120px;text-align:center;opacity:0.8">Memory fading...</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem;opacity:0.5">
+                    <div class="anim-box gray" style="min-width:70px;text-align:center">...</div>
+                    <span class="anim-arrow">→</span>
+                    <div class="anim-box gray" style="min-width:120px;text-align:center">Memory: ???</div>
+                  </div>
+                </div>
+              </div>
+              <p>The problem: the "memory" (called a hidden state) is just a fixed-size vector. Squeezing an entire long document into one small vector loses information.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 2 of 6</div>
+              <h2>The <span class="gradient-text">Vanishing Gradient</span> Problem</h2>
+              <p>To learn, neural networks use <strong>backpropagation</strong> — sending error signals backwards through the network. In RNNs, this signal must travel through every time step.</p>
+              <div class="highlight-box" style="border-left-color:#ef4444;background:rgba(239,68,68,0.08);margin:1rem 0">
+                ❌ The further back in the sequence, the weaker the gradient signal gets — like a whisper getting quieter down a long hallway. Early words barely influence the learning.
+              </div>
+              <p>This is the <strong>Vanishing Gradient Problem</strong>. LSTMs and GRUs helped somewhat, but didn't fully solve it for very long sequences.</p>
+              <div class="anim-flow">
+                <div class="anim-box gray" style="opacity:0.3">word₁</div>
+                <span class="anim-arrow">←</span>
+                <div class="anim-box gray" style="opacity:0.5">word₂</div>
+                <span class="anim-arrow">←</span>
+                <div class="anim-box gray" style="opacity:0.7">word₃</div>
+                <span class="anim-arrow">←</span>
+                <div class="anim-box cyan">word₄</div>
+              </div>
+              <p style="font-size:0.82rem;color:var(--text-3);text-align:center;margin-top:0.5rem">← Error signal gets weaker the further back it goes</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 3 of 6</div>
+              <h2>The <span class="gradient-text">Pronoun Problem</span></h2>
+              <p>Consider this sentence:</p>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:1rem;color:var(--text-1)">"The <strong style="color:#a78bfa">trophy</strong> didn't fit in the <strong style="color:#38bdf8">suitcase</strong> because <strong style="color:#fbbf24">it</strong> was too big."</p>
+                <p style="font-size:0.85rem;color:var(--text-3);margin-top:0.5rem">What does "it" refer to? <strong style="color:#fbbf24">the trophy</strong> (because the trophy was too big to fit)</p>
+              </div>
+              <div style="background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem;margin:1rem 0">
+                <p style="font-size:1rem;color:var(--text-1)">"The trophy didn't fit in the suitcase because <strong style="color:#fbbf24">it</strong> was too small."</p>
+                <p style="font-size:0.85rem;color:var(--text-3);margin-top:0.5rem">Now "it" refers to <strong style="color:#38bdf8">the suitcase</strong>!</p>
+              </div>
+              <p>To resolve "it", the model needs to understand <em>both</em> "trophy" and "suitcase" at the same time — not just remember "trophy" from a fading memory. RNNs struggle with this.</p>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 4 of 6</div>
+              <h2>Another Problem: <span class="gradient-text">No Parallelism</span></h2>
+              <p>RNNs must process words <em>one at a time</em> in sequence. You can't process word 5 until you've finished words 1–4.</p>
+              <div class="slide-two-col">
+                <div>
+                  <p style="color:#f87171;font-weight:600;margin-bottom:0.5rem">❌ RNN: Sequential</p>
+                  <div style="display:flex;flex-direction:column;gap:0.3rem">
+                    <div class="anim-box gray" style="width:100%;text-align:center">Step 1: Process "The"</div>
+                    <div class="anim-box gray" style="width:100%;text-align:center">Step 2: Process "cat"</div>
+                    <div class="anim-box gray" style="width:100%;text-align:center">Step 3: Process "sat"</div>
+                    <div class="anim-box gray" style="width:100%;text-align:center">Step 4: Process "on"</div>
+                  </div>
+                  <p style="font-size:0.78rem;color:var(--text-3);margin-top:0.5rem">Can't use GPU parallelism!</p>
+                </div>
+                <div>
+                  <p style="color:#34d399;font-weight:600;margin-bottom:0.5rem">✅ Transformer: Parallel</p>
+                  <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:0.75rem">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem">
+                      <div class="anim-box green" style="text-align:center;font-size:0.78rem">Process "The"</div>
+                      <div class="anim-box green" style="text-align:center;font-size:0.78rem">Process "cat"</div>
+                      <div class="anim-box green" style="text-align:center;font-size:0.78rem">Process "sat"</div>
+                      <div class="anim-box green" style="text-align:center;font-size:0.78rem">Process "on"</div>
+                    </div>
+                    <p style="font-size:0.72rem;color:#34d399;text-align:center;margin-top:0.5rem">All at once! 🚀</p>
+                  </div>
+                  <p style="font-size:0.78rem;color:var(--text-3);margin-top:0.5rem">Full GPU utilization</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 5 of 6</div>
+              <h2>The RNN vs Transformer <span class="gradient-text">Comparison</span></h2>
+              <table class="compare-table">
+                <thead>
+                  <tr><th>Feature</th><th>RNN/LSTM</th><th>Transformer</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Processing</td><td class="bad">Sequential ❌</td><td class="good">Parallel ✅</td></tr>
+                  <tr><td>Long-range deps</td><td class="bad">Struggles ❌</td><td class="good">Handles well ✅</td></tr>
+                  <tr><td>Training speed</td><td class="bad">Slow ❌</td><td class="good">Fast ✅</td></tr>
+                  <tr><td>Context window</td><td class="bad">Limited ❌</td><td class="good">Configurable ✅</td></tr>
+                  <tr><td>GPU usage</td><td class="bad">Poor ❌</td><td class="good">Excellent ✅</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="slide">
+              <div class="slide-num">Slide 6 of 6</div>
+              <h2>The Solution: <span class="gradient-text">Attention</span></h2>
+              <p>The revolutionary insight: instead of compressing everything into one memory vector, let every word <strong>directly attend to every other word</strong>.</p>
+              <div style="margin:1.25rem 0;background:var(--bg-secondary);border-radius:var(--radius-sm);padding:1.25rem">
+                <p style="font-size:0.9rem;color:var(--text-1);margin-bottom:1rem">"The trophy didn't fit because <strong style="color:#fbbf24">it</strong> was too big."</p>
+                <div style="display:flex;align-items:center;justify-content:center;gap:0.3rem;flex-wrap:wrap">
+                  <div class="anim-box gray" style="font-size:0.75rem">The</div>
+                  <div class="anim-box purple" style="font-size:0.75rem">trophy</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">didn't</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">fit</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">because</div>
+                  <div class="anim-box amber" style="font-size:0.75rem;font-weight:800">it</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">was</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">too</div>
+                  <div class="anim-box gray" style="font-size:0.75rem">big</div>
+                </div>
+                <p style="font-size:0.8rem;color:#fbbf24;text-align:center;margin-top:0.75rem">⚡ "it" directly attends to "trophy" — no memory required!</p>
+              </div>
+              <div class="highlight-box green">
+                ✅ With attention, information doesn't have to travel through time steps — any word can directly communicate with any other word!
+              </div>
+            </div>
+          </div>
+          <div class="slideshow-controls">
+            <button class="slide-btn prev" disabled>←</button>
+            <div class="slide-dots"></div>
+            <span class="slide-counter">1 / 6</span>
+            <button class="slide-btn next">→</button>
+          </div>
+        </div>
+
+        <div class="analogy-box reveal">
+          <div class="analogy-icon">📞</div>
+          <div>
+            <h4>The Phone Tree vs Group Chat Analogy</h4>
+            <p>RNNs are like a phone tree: Person A calls B, who calls C, who calls D. By the time D hears the message, it's been passed through multiple people and details are lost. Transformers are like a group chat — everyone hears everyone else directly, in parallel.</p>
+          </div>
+        </div>
+
+        <div class="concepts-section-lesson reveal">
+          <h2>Key Concepts</h2>
+          <div class="key-concepts-grid">
+            <div class="key-concept"><div class="kc-icon">🔄</div><div class="kc-title">RNN</div><div class="kc-desc">Recurrent Neural Network — processes sequences one step at a time, left to right.</div></div>
+            <div class="key-concept"><div class="kc-icon">📉</div><div class="kc-title">Vanishing Gradient</div><div class="kc-desc">Error signals weaken as they travel back through many time steps during training.</div></div>
+            <div class="key-concept"><div class="kc-icon">⚡</div><div class="kc-title">Parallelism</div><div class="kc-desc">Transformers process all tokens simultaneously, fully utilizing modern GPUs.</div></div>
+            <div class="key-concept"><div class="kc-icon">🎯</div><div class="kc-title">Long-range Dependencies</div><div class="kc-desc">The ability to connect information across long distances in text — attention handles this perfectly.</div></div>
+          </div>
+        </div>
+
+        <div class="quiz-section reveal">
+          <h2>Quick Check</h2>
+          <div class="quiz-card" id="quiz" data-correct="a"
+               data-success-msg="Correct! RNNs process sequentially so they can't parallelize, making them slow on GPUs."
+               data-fail-msg="One of the biggest RNN limitations is sequential processing — they can't use GPU parallelism effectively.">
+            <p class="quiz-question">What is one major reason Transformers train faster than RNNs?</p>
+            <div class="quiz-options">
+              <div class="quiz-option" data-value="a"><div class="option-letter">A</div>Transformers process all tokens in parallel, making full use of GPUs</div>
+              <div class="quiz-option" data-value="b"><div class="option-letter">B</div>Transformers have fewer parameters</div>
+              <div class="quiz-option" data-value="c"><div class="option-letter">C</div>Transformers skip punctuation tokens</div>
+              <div class="quiz-option" data-value="d"><div class="option-letter">D</div>Transformers use smaller vocabularies</div>
+            </div>
+            <button class="quiz-btn" disabled>Check Answer</button>
+            <div class="quiz-feedback"></div>
+          </div>
+        </div>
+
+        <div class="lesson-nav-footer">
+          <a href="03-embeddings.html" class="nav-prev"><span class="nav-label">← Previous</span><span class="nav-title">Word Embeddings</span></a>
+          <a href="05-attention.html" class="nav-next"><div><span class="nav-label">Next Lesson</span><span class="nav-title">Attention Mechanism →</span></div></a>
+        </div>
+      </main>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <script src="../js/app.js"></script>
+  <script src="../js/visualizations.js"></script>
+</body>
+</html>
