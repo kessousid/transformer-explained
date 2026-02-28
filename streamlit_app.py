@@ -95,12 +95,15 @@ def build_html(lesson: dict) -> str:
     def replace_href(m):
         href = m.group(1)
         # Resolve lesson key from filename
-        for l in LESSONS:
-            if l["file"].endswith(href) or l["file"] == href or \
-               href.endswith(l["file"].split("/")[-1]):
-                return f'href="#" onclick="window.parent.postMessage({{type:\'lesson\',key:\'{l[\"key\"]}\'}},\'*\');return false;"'
+        for lesson in LESSONS:
+            fname = lesson["file"].split("/")[-1]
+            if lesson["file"].endswith(href) or lesson["file"] == href or href.endswith(fname):
+                key = lesson["key"]
+                onclick = f"window.parent.postMessage({{type:'lesson',key:'{key}'}},'*');return false;"
+                return f'href="#" onclick="{onclick}"'
         if href in ("../index.html", "index.html", "../"):
-            return 'href="#" onclick="window.parent.postMessage({type:\'lesson\',key:\'home\'},\'*\');return false;"'
+            onclick = "window.parent.postMessage({type:'lesson',key:'home'},'*');return false;"
+            return f'href="#" onclick="{onclick}"'
         return m.group(0)  # leave unchanged
 
     html = re.sub(r'href="([^"#][^"]*\.html)"', replace_href, html)
