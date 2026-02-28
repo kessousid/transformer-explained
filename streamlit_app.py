@@ -62,30 +62,37 @@ def build_html(lesson: dict) -> str:
 
     html = path.read_text(encoding="utf-8")
 
-    # 1. Inline CSS (replace <link> tag)
-    html = re.sub(
-        r'<link[^>]+styles\.css[^>]*>',
+    # Build the inlined style/script blocks once
+    _style_block = (
         f"<style>\n{CSS}\n/* ── Streamlit overrides ── */\n"
         "body { background: #080818; overflow-x: hidden; }\n"
         ".lesson-layout { min-height: unset; }\n"
         ".sidebar, .sidebar-toggle, .lesson-topbar, .lesson-progress-bar { display: none !important; }\n"
         ".lesson-content { margin-left: 0 !important; max-width: 100% !important; }\n"
         ".lesson-body { padding: 1.5rem 1.25rem 3rem; max-width: 820px; margin: 0 auto; }\n"
-        "</style>",
+        "</style>"
+    )
+    _app_block  = f"<script>\n{APP_JS}\n</script>"
+    _viz_block  = f"<script>\n{VIZ_JS}\n</script>"
+
+    # 1. Inline CSS — use a lambda so re.sub never processes backslashes in the replacement
+    html = re.sub(
+        r'<link[^>]+styles\.css[^>]*>',
+        lambda m: _style_block,
         html,
         flags=re.IGNORECASE,
     )
 
-    # 2. Inline JS files
+    # 2. Inline JS files — same lambda trick
     html = re.sub(
         r'<script\s+src="[^"]*app\.js[^"]*"[^>]*>\s*</script>',
-        f"<script>\n{APP_JS}\n</script>",
+        lambda m: _app_block,
         html,
         flags=re.IGNORECASE,
     )
     html = re.sub(
         r'<script\s+src="[^"]*visualizations\.js[^"]*"[^>]*>\s*</script>',
-        f"<script>\n{VIZ_JS}\n</script>",
+        lambda m: _viz_block,
         html,
         flags=re.IGNORECASE,
     )
