@@ -2,7 +2,9 @@
 
 > A free, interactive course explaining how Transformer models and Large Language Models work. No math degree required.
 
-**Live Site:** [View on GitHub Pages](https://your-username.github.io/transformer-explained/)
+**GitHub Pages:** [https://kessousid.github.io/transformer-explained/](https://kessousid.github.io/transformer-explained/)
+
+**Streamlit App:** [https://transformer-explained.streamlit.app](https://transformer-explained.streamlit.app) *(deploy via Streamlit Cloud — see below)*
 
 ---
 
@@ -46,14 +48,24 @@
 
 ## 🚀 Getting Started
 
-### View locally
+### View locally (static site)
 Just open `index.html` in your browser — no server required!
 
-### Deploy to GitHub Pages
-1. Fork or clone this repo
-2. Push to GitHub
-3. Go to **Settings → Pages → Source: main branch / root**
-4. Your site will be live at `https://your-username.github.io/repo-name/`
+### Run locally (Streamlit)
+```bash
+pip install streamlit
+streamlit run streamlit_app.py
+```
+
+### Deploy to Streamlit Cloud (free)
+1. Go to **[share.streamlit.io](https://share.streamlit.io)**
+2. Sign in with GitHub
+3. Click **New app** → select `kessousid/transformer-explained`
+4. Main file: `streamlit_app.py`
+5. Click **Deploy** → live in ~60 seconds!
+
+### GitHub Pages (already live)
+**[https://kessousid.github.io/transformer-explained/](https://kessousid.github.io/transformer-explained/)**
 
 ---
 
