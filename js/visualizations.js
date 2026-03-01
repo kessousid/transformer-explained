@@ -485,8 +485,8 @@ function initArchViz(canvasId, type) {
 // ─────────────────────────────────────────────────
 //  LESSON 11: FULL TRANSFORMER ARCHITECTURE
 // ─────────────────────────────────────────────────
-function initFullTransformerViz() {
-  const canvas = document.getElementById('full-tf-canvas');
+function initFullTransformerViz(canvasId = 'full-tf-canvas') {
+  const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width = canvas.offsetWidth || 700;
