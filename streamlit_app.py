@@ -17,13 +17,15 @@ st.set_page_config(
 
 # ── PATHS ────────────────────────────────────────────────────────────────────
 BASE = Path(__file__).parent
-CSS_PATH = BASE / "css" / "styles.css"
+CSS_PATH  = BASE / "css" / "styles.css"
 APP_JS_PATH = BASE / "js" / "app.js"
 VIZ_JS_PATH = BASE / "js" / "visualizations.js"
+NAR_JS_PATH = BASE / "js" / "narrations.js"
 
 CSS     = CSS_PATH.read_text(encoding="utf-8")
 APP_JS  = APP_JS_PATH.read_text(encoding="utf-8")
 VIZ_JS  = VIZ_JS_PATH.read_text(encoding="utf-8")
+NAR_JS  = NAR_JS_PATH.read_text(encoding="utf-8")
 
 # ── LESSON REGISTRY ──────────────────────────────────────────────────────────
 LESSONS = [
@@ -70,10 +72,12 @@ def build_html(lesson: dict) -> str:
         ".sidebar, .sidebar-toggle, .lesson-topbar, .lesson-progress-bar { display: none !important; }\n"
         ".lesson-content { margin-left: 0 !important; max-width: 100% !important; }\n"
         ".lesson-body { padding: 1.5rem 1.25rem 3rem; max-width: 820px; margin: 0 auto; }\n"
+        ".tts-bar { left: 0 !important; }\n"
         "</style>"
     )
     _app_block  = f"<script>\n{APP_JS}\n</script>"
     _viz_block  = f"<script>\n{VIZ_JS}\n</script>"
+    _nar_block  = f"<script>\n{NAR_JS}\n</script>"
 
     # 1. Inline CSS — use a lambda so re.sub never processes backslashes in the replacement
     html = re.sub(
@@ -93,6 +97,12 @@ def build_html(lesson: dict) -> str:
     html = re.sub(
         r'<script\s+src="[^"]*visualizations\.js[^"]*"[^>]*>\s*</script>',
         lambda m: _viz_block,
+        html,
+        flags=re.IGNORECASE,
+    )
+    html = re.sub(
+        r'<script\s+src="[^"]*narrations\.js[^"]*"[^>]*>\s*</script>',
+        lambda m: _nar_block,
         html,
         flags=re.IGNORECASE,
     )

@@ -125,6 +125,7 @@ class Slideshow {
     this.updateUI();
     triggerSlideAnimations(this.slides[this.current]);
     updateProgressBar(this.current + 1, this.total);
+    if (window._tts) window._tts.setSlide(index);
   }
 
   updateUI() {
@@ -311,4 +312,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (texts.length) typeStep();
   }
+
+  // TTS — only on lesson pages (body has data-lesson-id)
+  if (document.body.dataset.lessonId) initTTS();
 });
+
+// ── TTS CONTROLLER ─────────────────────────────────
+class TTSController {
+  constructor(lessonId) {
+    this.lessonId   = lessonId;
+    this.narrations = (window.NARRATIONS && window.NARRATIONS[lessonId]) || [];
+    this.synth      = window.speechSynthesis;
+    this.rate       = 1;
+    this.slideIndex = 0;
+    this.playBtn    = null;
+    this.textEl     = null;
+    this.bar        = null;
+  }
+
+  buildBar() {
+    const bar = document.createElement('div');
+    bar.className = 'tts-bar';
+    bar.id = 'tts-bar';
+    bar.innerHTML = `
+      <div class="tts-inner">
+        <span class="tts-icon">🔊</span>
+        <div class="tts-text" id="tts-text">Click ▶ to hear narration for this slide.</div>
+        <div class="tts-controls">
+          <button class="tts-btn" id="tts-play" title="Play / Pause">▶</button>
+          <button class="tts-btn" id="tts-stop" title="Stop">■</button>
+          <select class="tts-speed" id="tts-speed" title="Playback speed">
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+          </select>
+        </div>
+        <button class="tts-toggle" id="tts-toggle" title="Hide player">✕</button>
+      </div>
+    `;
+    document.body.appendChild(bar);
+    this.bar     = bar;
+    this.playBtn = document.getElementById('tts-play');
+    this.textEl  = document.getElementById('tts-text');
+
+    document.getElementById('tts-play').addEventListener('click',  () => this.togglePlay());
+    document.getElementById('tts-stop').addEventListener('click',  () => this.stop());
+    document.getElementById('tts-speed').addEventListener('change', e => { this.rate = parseFloat(e.target.value); });
+    document.getElementById('tts-toggle').addEventListener('click', () => {
+      bar.classList.add('hidden');
+      const btn = document.createElement('button');
+      btn.className = 'tts-reopen';
+      btn.title = 'Open audio player';
+      btn.textContent = '🔊';
+      btn.addEventListener('click', () => { bar.classList.remove('hidden'); btn.remove(); });
+      document.body.appendChild(btn);
+    });
+
+    // Show initial narration text
+    const first = this.narrations[0];
+    if (first && this.textEl) this.textEl.textContent = first;
+  }
+
+  setSlide(index) {
+    this.slideIndex = index;
+    const text = this.narrations[index];
+    if (this.textEl) this.textEl.textContent = text || 'No narration for this slide.';
+    // Auto-continue playback on slide change if TTS was already active
+    const wasActive = this.synth.speaking || this.synth.paused;
+    if (wasActive && text) this.speak(text);
+  }
+
+  speak(text) {
+    if (!text || !this.synth) return;
+    this.synth.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = this.rate;
+    utt.onend  = () => this._setIdle();
+    utt.onerror = () => this._setIdle();
+    this.synth.speak(utt);
+    if (this.playBtn) { this.playBtn.textContent = '⏸'; this.playBtn.classList.add('active'); }
+  }
+
+  togglePlay() {
+    if (!this.synth) return;
+    if (this.synth.speaking) {
+      if (this.synth.paused) {
+        this.synth.resume();
+        if (this.playBtn) { this.playBtn.textContent = '⏸'; this.playBtn.classList.add('active'); }
+      } else {
+        this.synth.pause();
+        if (this.playBtn) { this.playBtn.textContent = '▶'; this.playBtn.classList.remove('active'); }
+      }
+    } else {
+      const text = this.narrations[this.slideIndex];
+      if (text) this.speak(text);
+    }
+  }
+
+  stop() {
+    if (this.synth) this.synth.cancel();
+    this._setIdle();
+  }
+
+  _setIdle() {
+    if (this.playBtn) { this.playBtn.textContent = '▶'; this.playBtn.classList.remove('active'); }
+  }
+}
+
+function initTTS() {
+  if (!window.speechSynthesis) return;
+  const lessonId = document.body.dataset.lessonId;
+  if (!lessonId || !window.NARRATIONS) return;
+  const tts = new TTSController(lessonId);
+  tts.buildBar();
+  window._tts = tts;
+}
